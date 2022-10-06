@@ -3,7 +3,6 @@ package pl.lodz.nbd.repository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
-import jakarta.persistence.PersistenceUnit;
 
 public class EntityManagerCreator {
     

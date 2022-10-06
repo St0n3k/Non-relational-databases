@@ -1,13 +1,11 @@
 package pl.lodz.nbd.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
 public class Client {
 
@@ -16,26 +14,27 @@ public class Client {
     @Column(name = "client_id")
     private Long clientId;
 
-    @Column
+    @Column(name = "first_name")
     private String firstName;
 
-    @Column
+    @Column(name = "last_name")
     private String lastName;
 
-    @Column
+    @Column(name = "personal_id")
     private String personalId;
 
     @Column
-    private Boolean archived;
+    private boolean archived;
 
     @ManyToOne
-    @JoinColumn
+    @JoinColumn(name = "address_id")
     private Address address;
 
-    public Client(String firstName, String lastName, String personalId, Boolean archived) {
+    public Client(String firstName, String lastName, String personalId, boolean archived, Address address) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.personalId = personalId;
         this.archived = archived;
+        this.address = address;
     }
 }

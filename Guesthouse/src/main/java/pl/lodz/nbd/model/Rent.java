@@ -1,41 +1,47 @@
 package pl.lodz.nbd.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
-import pl.lodz.nbd.model.Room;
-
 @Entity
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
 public class Rent {
+
     @Id
     @GeneratedValue
     @Column(name = "rent_id")
-    private Long rentId;
+    private Long id;
 
-    @Column
+    @Column(name = "begin_time")
     private Date beginTime;
 
-    @Column
+    @Column(name = "end_time")
     private Date endTime;
 
     @Column
-    private Boolean board;
+    private boolean board;
 
-    @Column
-    private Double finalCost;
+    @Column(name = "final_cost")
+    private double finalCost;
 
     @ManyToOne
-    @JoinColumn
+    @JoinColumn(name = "client_id")
     private Client client;
 
-    @JoinColumn
     @ManyToOne
+    @JoinColumn(name = "room_id")
     private Room room;
+
+    public Rent(Date beginTime, Date endTime, boolean board, double finalCost, Client client, Room room) {
+        this.beginTime = beginTime;
+        this.endTime = endTime;
+        this.board = board;
+        this.finalCost = finalCost;
+        this.client = client;
+        this.room = room;
+    }
 }

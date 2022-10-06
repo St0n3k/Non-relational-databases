@@ -5,7 +5,7 @@ import pl.lodz.nbd.model.Room;
 
 public class RoomRepository implements Repository<Room> {
     @Override
-    public void add(Room item, EntityManager em) {
-
+    public void add(Room room, EntityManager em) {
+        em.persist(room);
     }
 }

@@ -1,22 +1,29 @@
 package pl.lodz.nbd;
 
 import jakarta.persistence.EntityManager;
-import jakarta.transaction.Transactional;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import pl.lodz.nbd.manager.ClientManager;
 import pl.lodz.nbd.model.Address;
-import pl.lodz.nbd.repository.AddressRepository;
-import pl.lodz.nbd.repository.EntityManagerCreator;
+import pl.lodz.nbd.model.Client;
+import pl.lodz.nbd.model.Rent;
+import pl.lodz.nbd.model.Room;
+import pl.lodz.nbd.repository.*;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.util.Date;
 
 public class TestClass {
 
-    private static AddressRepository addressRepository = new AddressRepository();
+    private static final AddressRepository addressRepository = new AddressRepository();
+    private static final RoomRepository roomRepository = new RoomRepository();
+    private static final ClientRepository clientRepository = new ClientRepository();
+    private static final RentRepository rentRepository = new RentRepository();
 
-    @BeforeAll
-    static void beforeAll() {
-        addressRepository = new AddressRepository();
+
+    @Test
+    void registerClientTest() {
+        ClientManager clientManager = new ClientManager(addressRepository, clientRepository);
+        clientManager.registerClient("Marek", "Kowalski", "000333", false, "Warszawa", "Astronautów", 1);
+
     }
 
     @Test
@@ -24,11 +31,17 @@ public class TestClass {
         EntityManager em = EntityManagerCreator.getEntityManager();
 
         Address address = new Address("Łódź", "Astronautów", 41);
+        Room room = new Room(100, 100.0, false, 1);
+        Client client = new Client("Jan", "Kowalski", "000333", false, address);
+        Rent rent = new Rent(new Date(System.currentTimeMillis()), new Date(System.currentTimeMillis()), false, 100.0, client, room);
 
         em.getTransaction().begin();
         addressRepository.add(address, em);
-        //We can save other entities there in the same transaction (Atomic)
+        roomRepository.add(room, em);
+        clientRepository.add(client, em);
+        rentRepository.add(rent, em);
         em.getTransaction().commit();
+        em.close();
     }
 
 }
