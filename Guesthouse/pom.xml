@@ -17,12 +17,12 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core-jakarta</artifactId>
-            <version>5.6.11.Final</version>
+            <version>5.6.12.Final</version>
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-jpamodelgen-jakarta</artifactId>
-            <version>5.6.11.Final</version>
+            <version>5.6.12.Final</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jaxb</groupId>
@@ -32,7 +32,7 @@
         <dependency>
             <groupId>org.apache.derby</groupId>
             <artifactId>derby</artifactId>
-            <version>10.13.1.1</version>
+            <version>10.15.2.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -50,6 +50,11 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.24</version>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.5.0</version>
         </dependency>
 
 

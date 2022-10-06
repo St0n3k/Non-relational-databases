@@ -18,6 +18,7 @@ public class TestClass {
 
     @Test
     void test1() {
+        addressRepository = new AddressRepository();
         Address address = new Address("Łódź", "Astronautów", 41);
         addressRepository.add(address);
 
