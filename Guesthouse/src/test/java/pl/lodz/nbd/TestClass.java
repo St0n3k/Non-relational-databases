@@ -8,10 +8,15 @@ import pl.lodz.nbd.manager.RentManager;
 import pl.lodz.nbd.manager.RoomManager;
 import pl.lodz.nbd.model.Address;
 import pl.lodz.nbd.model.Client;
+import pl.lodz.nbd.model.Rent;
 import pl.lodz.nbd.model.Room;
 import pl.lodz.nbd.repository.*;
 
 
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -77,7 +82,8 @@ public class TestClass {
 
         Client client = clientManager.registerClient("Marek", "Kowalski", "000566", "Warszawa", "Astronautów", 1);
         Room room = roomManager.addRoom(100.0, 2, 400);
-        rentManager.rentRoom(new Date(System.currentTimeMillis()), new Date(System.currentTimeMillis()), true, client.getPersonalId(), room.getRoomNumber());
+        Rent rent = rentManager.rentRoom(LocalDateTime.now(), LocalDateTime.of(LocalDate.ofYearDay(2022, 282), LocalTime.NOON), true, client.getPersonalId(), room.getRoomNumber());
+        System.out.println(rent);
     }
 
 }

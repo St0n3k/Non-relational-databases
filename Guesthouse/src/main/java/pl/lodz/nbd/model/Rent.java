@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Entity
 @NamedQueries({
@@ -26,11 +26,11 @@ public class Rent {
 
     @NotNull
     @Column(name = "begin_time")
-    private Date beginTime;
+    private LocalDateTime beginTime;
 
     @NotNull
     @Column(name = "end_time")
-    private Date endTime;
+    private LocalDateTime endTime;
 
     @NotNull
     @Column
@@ -48,7 +48,7 @@ public class Rent {
     @JoinColumn(name = "room_id")
     private Room room;
 
-    public Rent(Date beginTime, Date endTime, boolean board, double finalCost, Client client, Room room) {
+    public Rent(LocalDateTime beginTime, LocalDateTime endTime, boolean board, double finalCost, Client client, Room room) {
         this.beginTime = beginTime;
         this.endTime = endTime;
         this.board = board;

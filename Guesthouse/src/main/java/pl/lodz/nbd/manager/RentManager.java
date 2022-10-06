@@ -10,7 +10,8 @@ import pl.lodz.nbd.repository.EntityManagerCreator;
 import pl.lodz.nbd.repository.RentRepository;
 import pl.lodz.nbd.repository.RoomRepository;
 
-import java.util.Date;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @AllArgsConstructor
@@ -20,7 +21,7 @@ public class RentManager {
     private RoomRepository roomRepository;
     private RentRepository rentRepository;
 
-    public Rent rentRoom(Date beginTime, Date endTime, boolean board, String clientPersonalId, int roomNumber) {
+    public Rent rentRoom(LocalDateTime beginTime, LocalDateTime endTime, boolean board, String clientPersonalId, int roomNumber) {
 
         EntityManager em = EntityManagerCreator.getEntityManager();
 
@@ -30,8 +31,8 @@ public class RentManager {
 
         System.out.println(roomRentList);
 
-        //TODO calculate cost
-        double finalCost = 1000.0;
+        Duration duration = Duration.between(beginTime, endTime);
+        double finalCost = Math.ceil(duration.toHours() / 24.0) * room.getPrice();
 
         //TODO check if dates are not colliding with actual rents of room
         Rent rent = new Rent(beginTime, endTime, board, finalCost, client, room);
