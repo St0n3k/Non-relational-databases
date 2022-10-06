@@ -9,7 +9,9 @@ import lombok.NonNull;
 @Entity
 @NamedQueries({
         @NamedQuery(name="Client.getAll",
-                query="SELECT c FROM Client c")
+                query="SELECT c FROM Client c"),
+        @NamedQuery(name="Client.getByPersonalId",
+                query="SELECT c FROM Client c WHERE c.personalId = :personalId")
 })
 @Data
 @NoArgsConstructor

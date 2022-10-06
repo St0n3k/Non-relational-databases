@@ -26,4 +26,8 @@ public class RentRepository implements Repository<Rent> {
     public List<Rent> getAll(EntityManager em) {
         return em.createNamedQuery("Rent.getAll", Rent.class).getResultList();
     }
+
+    public List<Rent> getByRoomNumber(int roomNumber, EntityManager em) {
+        return em.createNamedQuery("Rent.getByRoomNumber", Rent.class).setParameter("roomNumber", roomNumber).getResultList();
+    }
 }

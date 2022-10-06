@@ -35,4 +35,9 @@ public class ClientManager {
 
         return client;
     }
+
+    public Client getByPersonalId(String personalId) {
+        EntityManager em = EntityManagerCreator.getEntityManager();
+        return clientRepository.getClientByPersonalId(personalId, em);
+    }
 }

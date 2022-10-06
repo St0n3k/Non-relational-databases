@@ -26,4 +26,14 @@ public class ClientRepository implements Repository<Client> {
     public List<Client> getAll(EntityManager em) {
         return em.createNamedQuery("Client.getAll", Client.class).getResultList();
     }
+
+    public Client getClientByPersonalId(String personalId, EntityManager em) {
+        List<Client> result = em.createNamedQuery("Client.getByPersonalId", Client.class).setParameter("personalId", personalId).getResultList();
+
+        if (result.isEmpty()) {
+            return null;
+        } else {
+            return result.get(0);
+        }
+    }
 }

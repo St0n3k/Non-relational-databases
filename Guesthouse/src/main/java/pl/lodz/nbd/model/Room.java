@@ -8,7 +8,9 @@ import lombok.NoArgsConstructor;
 @Entity
 @NamedQueries({
         @NamedQuery(name="Room.getAll",
-                query="SELECT r FROM Room r")
+                query="SELECT r FROM Room r"),
+        @NamedQuery(name="Room.getByRoomNumber",
+                query="SELECT r FROM Room r WHERE r.roomNumber = :roomNumber")
 })
 @Data
 @NoArgsConstructor

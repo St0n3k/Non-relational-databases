@@ -26,4 +26,14 @@ public class RoomRepository implements Repository<Room> {
     public List<Room> getAll(EntityManager em) {
         return em.createNamedQuery("Room.getAll", Room.class).getResultList();
     }
+
+    public Room getByRoomNumber(int roomNumber, EntityManager em) {
+        List<Room> result = em.createNamedQuery("Room.getByRoomNumber", Room.class).setParameter("roomNumber", roomNumber).getResultList();
+
+        if (result.isEmpty()) {
+            return null;
+        } else {
+            return result.get(0);
+        }
+    }
 }

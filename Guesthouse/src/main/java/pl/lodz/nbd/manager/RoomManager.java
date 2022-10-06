@@ -13,7 +13,7 @@ public class RoomManager {
     private RoomRepository roomRepository;
 
     public Room addRoom(double price, int size, int number) {
-        Room room = new Room(number, price, false, size );
+        Room room = new Room(number, price, size );
 
         EntityManager em = EntityManagerCreator.getEntityManager();
 
@@ -28,6 +28,11 @@ public class RoomManager {
         }
 
         return room;
+    }
+
+    public Room getByRoomNumber(int number) {
+        EntityManager em = EntityManagerCreator.getEntityManager();
+        return roomRepository.getByRoomNumber(number, em);
     }
 
 }

@@ -10,7 +10,9 @@ import java.util.Date;
 @Entity
 @NamedQueries({
         @NamedQuery(name="Rent.getAll",
-                query="SELECT r FROM Rent r")
+                query="SELECT r FROM Rent r"),
+        @NamedQuery(name="Rent.getByRoomNumber",
+                query="SELECT r FROM Rent r WHERE r.room = :roomNumber")
 })
 @Data
 @NoArgsConstructor
