@@ -29,7 +29,11 @@ public class RentManager {
         Room room = roomRepository.getByRoomNumber(roomNumber, em);
         List<Rent> roomRentList = rentRepository.getByRoomNumber(roomNumber, em);
 
-        System.out.println(roomRentList);
+        boolean isColliding = roomRentList.stream()
+                        .anyMatch(rent -> isColliding(rent, beginTime, endTime));
+
+
+        System.out.println(isColliding);
 
         Duration duration = Duration.between(beginTime, endTime);
         double finalCost = Math.ceil(duration.toHours() / 24.0) * room.getPrice();
@@ -42,8 +46,14 @@ public class RentManager {
         em.getTransaction().commit();
 
         return rent;
+    }
 
-
+    private boolean isColliding(Rent rent, LocalDateTime beginTime, LocalDateTime endTime) {
+        if (rent.getBeginTime().isAfter(endTime) || rent.getEndTime().isBefore(beginTime)) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
 }

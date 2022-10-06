@@ -83,6 +83,7 @@ public class TestClass {
         Client client = clientManager.registerClient("Marek", "Kowalski", "000566", "Warszawa", "Astronautów", 1);
         Room room = roomManager.addRoom(100.0, 2, 400);
         Rent rent = rentManager.rentRoom(LocalDateTime.now(), LocalDateTime.of(LocalDate.ofYearDay(2022, 282), LocalTime.NOON), true, client.getPersonalId(), room.getRoomNumber());
+        //Rent rent2 = rentManager.rentRoom(LocalDateTime.now(), LocalDateTime.of(LocalDate.ofYearDay(2022, 283), LocalTime.NOON), true, client.getPersonalId(), room.getRoomNumber());
         System.out.println(rent);
     }
 
