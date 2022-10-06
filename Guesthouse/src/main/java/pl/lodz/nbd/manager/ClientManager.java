@@ -15,9 +15,9 @@ public class ClientManager {
     private AddressRepository addressRepository;
     private ClientRepository clientRepository;
 
-    public Client registerClient(String firstName, String lastName, String personalId, boolean archived, String city, String street, int number) {
+    public Client registerClient(String firstName, String lastName, String personalId, String city, String street, int number) {
         Address address = new Address(city, street, number);
-        Client client = new Client(firstName, lastName, personalId, archived, address);
+        Client client = new Client(firstName, lastName, personalId, address);
 
         EntityManager em = EntityManagerCreator.getEntityManager();
 

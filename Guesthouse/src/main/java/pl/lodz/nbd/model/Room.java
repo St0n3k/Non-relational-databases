@@ -1,38 +1,40 @@
 package pl.lodz.nbd.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import com.sun.istack.NotNull;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
+@NamedQueries({
+        @NamedQuery(name="Room.getAll",
+                query="SELECT r FROM Room r")
+})
 @Data
 @NoArgsConstructor
 public class Room {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(generator = "roomId")
+    @NotNull
     @Column(name = "room_id")
     private Long id;
 
+    @NotNull
     @Column(name = "room_number", unique = true)
     private int roomNumber;
 
+    @NotNull
     @Column
     private double price;
 
-    @Column(name = "is_rented")
-    private boolean isRented;
-
+    @NotNull
     @Column
     private int size;
 
-    public Room(int roomNumber, double price, boolean isRented, int size) {
+    public Room(int roomNumber, double price, int size) {
         this.roomNumber = roomNumber;
         this.price = price;
-        this.isRented = isRented;
         this.size = size;
     }
 }

@@ -1,28 +1,34 @@
 package pl.lodz.nbd.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import com.sun.istack.NotNull;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
+@NamedQueries({
+        @NamedQuery(name="Address.getAll",
+                query="SELECT a FROM Address a")
+})
 @Data
 @NoArgsConstructor
 public class Address {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(generator = "addressId")
+    @NotNull
     @Column(name = "address_id")
     private Long id;
 
+    @NotNull
     @Column
     private String city;
 
+    @NotNull
     @Column
     private String street;
 
+    @NotNull
     @Column
     private int number;
 
