@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.RollbackException;
 import org.junit.jupiter.api.Test;
 import pl.lodz.nbd.manager.ClientManager;
+import pl.lodz.nbd.manager.RoomManager;
 import pl.lodz.nbd.model.Address;
 import pl.lodz.nbd.model.Client;
 import pl.lodz.nbd.model.Rent;
@@ -11,6 +12,9 @@ import pl.lodz.nbd.model.Room;
 import pl.lodz.nbd.repository.*;
 
 import java.util.Date;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class TestClass {
 
@@ -23,30 +27,30 @@ public class TestClass {
     @Test
     void registerClientTest() {
         ClientManager clientManager = new ClientManager(addressRepository, clientRepository);
-        clientManager.registerClient("Marek", "Kowalski", "000333", false, "Warszawa", "Astronautów", 1);
 
+        //Check if clients are persisted
+        assertNotNull(clientManager.registerClient("Marek", "Kowalski", "000333", false, "Warszawa", "Astronautów", 1));
+        assertNotNull(clientManager.registerClient("Jan", "Matejko", "000222", false, "Łódź", "Wesoła", 32));
+
+        //TODO getByPersonalId returns not null
+
+        //Check if client is not persisted (existing personalId)
+        assertNull(clientManager.registerClient("Jakub", "Polak", "000222", false, "Kraków", "Słoneczna", 133));
     }
 
+
     @Test
-    void test1() {
-        EntityManager em = EntityManagerCreator.getEntityManager();
+    void addRoomTest() {
+        RoomManager roomManager = new RoomManager(roomRepository);
 
-        Address address = new Address("Łódź", "Astronautów", 42);
-        Room room = new Room(100, 100.0, false, 1);
-        Client client = new Client("Jan", "Kowalski", "000333", false, address);
-        Rent rent = new Rent(new Date(System.currentTimeMillis()), new Date(System.currentTimeMillis()), false, 100.0, client, room);
+        //Check if rooms are persisted
+        assertNotNull(roomManager.addRoom(100.0, 2, 100));
+        assertNotNull(roomManager.addRoom(200.0, 3, 101));
 
-        em.getTransaction().begin();
-        try{
-            addressRepository.add(address, em);
-            roomRepository.add(room, em);
-            clientRepository.add(client, em);
-            rentRepository.add(rent, em);
-            em.getTransaction().commit();
-        }catch(RollbackException e){
-            em.getTransaction().rollback();
-        }
-        em.close();
+        //TODO getByRoomNumber returns not null
+
+        //Check if room is not persisted(existing room number)
+        assertNull(roomManager.addRoom(1000.0, 5, 100));
     }
 
 }

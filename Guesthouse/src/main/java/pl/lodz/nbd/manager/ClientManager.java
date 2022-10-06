@@ -21,12 +21,12 @@ public class ClientManager {
 
         EntityManager em = EntityManagerCreator.getEntityManager();
 
-        try{
+        try {
             em.getTransaction().begin();
             em.persist(address);
             em.persist(client);
             em.getTransaction().commit();
-        }catch (RollbackException e){
+        } catch (RollbackException e){
             em.getTransaction().rollback();
             em.close();
             return null;
