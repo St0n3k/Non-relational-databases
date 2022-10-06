@@ -1,5 +1,6 @@
 package pl.lodz.nbd.model;
 
+import com.sun.istack.NotNull;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -7,24 +8,33 @@ import lombok.NoArgsConstructor;
 import java.util.Date;
 
 @Entity
+@NamedQueries({
+        @NamedQuery(name="Rent.getAll",
+                query="SELECT r FROM Rent r")
+})
 @Data
 @NoArgsConstructor
 public class Rent {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(generator = "rentId")
+    @NotNull
     @Column(name = "rent_id")
     private Long id;
 
+    @NotNull
     @Column(name = "begin_time")
     private Date beginTime;
 
+    @NotNull
     @Column(name = "end_time")
     private Date endTime;
 
+    @NotNull
     @Column
     private boolean board;
 
+    @NotNull
     @Column(name = "final_cost")
     private double finalCost;
 

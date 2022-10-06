@@ -23,7 +23,7 @@ public class TestClass {
     @Test
     void registerClientTest() {
         ClientManager clientManager = new ClientManager(addressRepository, clientRepository);
-        clientManager.registerClient("Marek", "Kowalski", "000333", false, "Warszawa", "Astronautów", 1);
+        clientManager.registerClient("Marek", "Kowalski", "000333", "Warszawa", "Astronautów", 1);
 
     }
 
@@ -32,8 +32,8 @@ public class TestClass {
         EntityManager em = EntityManagerCreator.getEntityManager();
 
         Address address = new Address("Łódź", "Astronautów", 42);
-        Room room = new Room(100, 100.0, false, 1);
-        Client client = new Client("Jan", "Kowalski", "000333", false, address);
+        Room room = new Room(100, 100.0, 1);
+        Client client = new Client("Jan", "Kowalski", "000333", address);
         Rent rent = new Rent(new Date(System.currentTimeMillis()), new Date(System.currentTimeMillis()), false, 100.0, client, room);
 
         em.getTransaction().begin();
