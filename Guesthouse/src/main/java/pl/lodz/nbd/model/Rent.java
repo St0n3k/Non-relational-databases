@@ -12,7 +12,7 @@ import java.util.Date;
         @NamedQuery(name="Rent.getAll",
                 query="SELECT r FROM Rent r"),
         @NamedQuery(name="Rent.getByRoomNumber",
-                query="SELECT r FROM Rent r WHERE r.room = :roomNumber")
+                query="SELECT r FROM Rent r WHERE r.room.roomNumber = :roomNumber")
 })
 @Data
 @NoArgsConstructor

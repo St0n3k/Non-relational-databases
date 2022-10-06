@@ -75,8 +75,8 @@ public class TestClass {
         RentManager rentManager = new RentManager(clientRepository, roomRepository, rentRepository);
         ClientManager clientManager = new ClientManager(addressRepository, clientRepository);
 
-        Client client = clientManager.registerClient("Marek", "Kowalski", "000333", "Warszawa", "Astronautów", 1);
-        Room room = roomManager.addRoom(100.0, 2, 100);
+        Client client = clientManager.registerClient("Marek", "Kowalski", "000566", "Warszawa", "Astronautów", 1);
+        Room room = roomManager.addRoom(100.0, 2, 400);
         rentManager.rentRoom(new Date(System.currentTimeMillis()), new Date(System.currentTimeMillis()), true, client.getPersonalId(), room.getRoomNumber());
     }
 
