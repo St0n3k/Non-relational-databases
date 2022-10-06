@@ -1,6 +1,7 @@
 package pl.lodz.nbd.manager;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.RollbackException;
 import lombok.AllArgsConstructor;
 import pl.lodz.nbd.model.Address;
 import pl.lodz.nbd.model.Client;
@@ -20,11 +21,16 @@ public class ClientManager {
 
         EntityManager em = EntityManagerCreator.getEntityManager();
 
-
-        em.getTransaction().begin();
-        em.persist(address);
-        em.persist(client);
-        em.getTransaction().commit();
+        try{
+            em.getTransaction().begin();
+            em.persist(address);
+            em.persist(client);
+            em.getTransaction().commit();
+        }catch (RollbackException e){
+            em.getTransaction().rollback();
+            em.close();
+            return null;
+        }
         em.close();
 
         return client;

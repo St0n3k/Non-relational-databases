@@ -20,7 +20,7 @@ public class Client {
     @Column(name = "last_name")
     private String lastName;
 
-    @Column(name = "personal_id")
+    @Column(name = "personal_id", unique = true)
     private String personalId;
 
     @Column

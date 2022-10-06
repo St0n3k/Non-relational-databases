@@ -1,6 +1,7 @@
 package pl.lodz.nbd;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.RollbackException;
 import org.junit.jupiter.api.Test;
 import pl.lodz.nbd.manager.ClientManager;
 import pl.lodz.nbd.model.Address;
@@ -30,17 +31,21 @@ public class TestClass {
     void test1() {
         EntityManager em = EntityManagerCreator.getEntityManager();
 
-        Address address = new Address("Łódź", "Astronautów", 41);
+        Address address = new Address("Łódź", "Astronautów", 42);
         Room room = new Room(100, 100.0, false, 1);
         Client client = new Client("Jan", "Kowalski", "000333", false, address);
         Rent rent = new Rent(new Date(System.currentTimeMillis()), new Date(System.currentTimeMillis()), false, 100.0, client, room);
 
         em.getTransaction().begin();
-        addressRepository.add(address, em);
-        roomRepository.add(room, em);
-        clientRepository.add(client, em);
-        rentRepository.add(rent, em);
-        em.getTransaction().commit();
+        try{
+            addressRepository.add(address, em);
+            roomRepository.add(room, em);
+            clientRepository.add(client, em);
+            rentRepository.add(rent, em);
+            em.getTransaction().commit();
+        }catch(RollbackException e){
+            em.getTransaction().rollback();
+        }
         em.close();
     }
 
