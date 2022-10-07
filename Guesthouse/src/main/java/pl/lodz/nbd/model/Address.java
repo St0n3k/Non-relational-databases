@@ -1,25 +1,19 @@
 package pl.lodz.nbd.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Access;
+import jakarta.persistence.AccessType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import pl.lodz.nbd.common.MyValidator;
 
-@Entity
-@NamedQueries({
-        @NamedQuery(name = "Address.getAll",
-                query = "SELECT a FROM Address a")
-})
+@Embeddable
+@Access(AccessType.FIELD)
 @Data
 @NoArgsConstructor
 public class Address {
-
-    @Id
-    @GeneratedValue(generator = "addressId")
-    @Column(name = "address_id")
-    private Long id;
-
     @NotNull
     @Column
     private String city;
@@ -29,13 +23,13 @@ public class Address {
     private String street;
 
     @NotNull
-    @Column
-    private int number;
+    @Column(name = "house_number")
+    private int houseNumber;
 
-    public Address(String city, String street, int number) {
+    public Address(String city, String street, int houseNumber) {
         this.city = city;
         this.street = street;
-        this.number = number;
+        this.houseNumber = houseNumber;
         MyValidator.validate(this);
     }
 }
