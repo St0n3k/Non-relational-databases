@@ -1,11 +1,10 @@
 package pl.lodz.nbd.manager;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.RollbackException;
 import lombok.AllArgsConstructor;
+import pl.lodz.nbd.common.EntityManagerCreator;
 import pl.lodz.nbd.model.Room;
-import pl.lodz.nbd.repository.EntityManagerCreator;
-import pl.lodz.nbd.repository.RoomRepository;
+import pl.lodz.nbd.repository.impl.RoomRepository;
 
 @AllArgsConstructor
 public class RoomManager {
@@ -13,26 +12,25 @@ public class RoomManager {
     private RoomRepository roomRepository;
 
     public Room addRoom(double price, int size, int number) {
-        Room room = new Room(number, price, size );
 
-        EntityManager em = EntityManagerCreator.getEntityManager();
+        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
+            Room room = new Room(number, price, size);
 
-        try {
             em.getTransaction().begin();
             roomRepository.add(room, em);
             em.getTransaction().commit();
-        } catch(RollbackException e) {
-            em.getTransaction().rollback();
-            em.close();
+            return room;
+
+        } catch (Exception e) {
             return null;
         }
-
-        return room;
     }
 
     public Room getByRoomNumber(int number) {
-        EntityManager em = EntityManagerCreator.getEntityManager();
-        return roomRepository.getByRoomNumber(number, em);
+        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
+            return roomRepository.getByRoomNumber(number, em);
+        } catch (Exception e) {
+            return null;
+        }
     }
-
 }

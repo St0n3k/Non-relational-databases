@@ -1,8 +1,8 @@
-package pl.lodz.nbd.repository;
+package pl.lodz.nbd.repository.impl;
 
 import jakarta.persistence.EntityManager;
-import pl.lodz.nbd.model.Address;
 import pl.lodz.nbd.model.Room;
+import pl.lodz.nbd.repository.Repository;
 
 import java.util.List;
 
@@ -24,11 +24,15 @@ public class RoomRepository implements Repository<Room> {
 
     @Override
     public List<Room> getAll(EntityManager em) {
-        return em.createNamedQuery("Room.getAll", Room.class).getResultList();
+        return em.createNamedQuery("Room.getAll", Room.class)
+                .getResultList();
     }
 
     public Room getByRoomNumber(int roomNumber, EntityManager em) {
-        List<Room> result = em.createNamedQuery("Room.getByRoomNumber", Room.class).setParameter("roomNumber", roomNumber).getResultList();
+        List<Room> result = em
+                .createNamedQuery("Room.getByRoomNumber", Room.class)
+                .setParameter("roomNumber", roomNumber)
+                .getResultList();
 
         if (result.isEmpty()) {
             return null;

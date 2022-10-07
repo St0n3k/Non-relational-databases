@@ -1,13 +1,12 @@
 package pl.lodz.nbd.manager;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.RollbackException;
 import lombok.AllArgsConstructor;
+import pl.lodz.nbd.common.EntityManagerCreator;
 import pl.lodz.nbd.model.Address;
 import pl.lodz.nbd.model.Client;
-import pl.lodz.nbd.repository.AddressRepository;
-import pl.lodz.nbd.repository.ClientRepository;
-import pl.lodz.nbd.repository.EntityManagerCreator;
+import pl.lodz.nbd.repository.impl.AddressRepository;
+import pl.lodz.nbd.repository.impl.ClientRepository;
 
 @AllArgsConstructor
 public class ClientManager {
@@ -16,28 +15,29 @@ public class ClientManager {
     private ClientRepository clientRepository;
 
     public Client registerClient(String firstName, String lastName, String personalId, String city, String street, int number) {
-        Address address = new Address(city, street, number);
-        Client client = new Client(firstName, lastName, personalId, address);
 
-        EntityManager em = EntityManagerCreator.getEntityManager();
+        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
+            //Values are validated in constructors
+            Address address = new Address(city, street, number);
+            Client client = new Client(firstName, lastName, personalId, address);
 
-        try {
             em.getTransaction().begin();
-            em.persist(address);
-            em.persist(client);
+            addressRepository.add(address, em);
+            clientRepository.add(client, em);
             em.getTransaction().commit();
-        } catch (RollbackException e){
-            em.getTransaction().rollback();
-            em.close();
+
+            return client;
+
+        } catch (Exception e) {
             return null;
         }
-        em.close();
-
-        return client;
     }
 
     public Client getByPersonalId(String personalId) {
-        EntityManager em = EntityManagerCreator.getEntityManager();
-        return clientRepository.getClientByPersonalId(personalId, em);
+        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
+            return clientRepository.getClientByPersonalId(personalId, em);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

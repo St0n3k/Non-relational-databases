@@ -1,8 +1,8 @@
-package pl.lodz.nbd.repository;
+package pl.lodz.nbd.repository.impl;
 
 import jakarta.persistence.EntityManager;
-import pl.lodz.nbd.model.Address;
 import pl.lodz.nbd.model.Client;
+import pl.lodz.nbd.repository.Repository;
 
 import java.util.List;
 
