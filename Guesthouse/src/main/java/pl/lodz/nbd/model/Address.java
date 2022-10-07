@@ -1,14 +1,15 @@
 package pl.lodz.nbd.model;
 
-import com.sun.istack.NotNull;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import pl.lodz.nbd.common.MyValidator;
 
 @Entity
 @NamedQueries({
-        @NamedQuery(name="Address.getAll",
-                query="SELECT a FROM Address a")
+        @NamedQuery(name = "Address.getAll",
+                query = "SELECT a FROM Address a")
 })
 @Data
 @NoArgsConstructor
@@ -16,7 +17,6 @@ public class Address {
 
     @Id
     @GeneratedValue(generator = "addressId")
-    @NotNull
     @Column(name = "address_id")
     private Long id;
 
@@ -36,5 +36,6 @@ public class Address {
         this.city = city;
         this.street = street;
         this.number = number;
+        MyValidator.validate(this);
     }
 }

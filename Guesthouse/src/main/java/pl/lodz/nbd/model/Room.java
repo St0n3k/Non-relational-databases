@@ -1,16 +1,17 @@
 package pl.lodz.nbd.model;
 
-import com.sun.istack.NotNull;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import pl.lodz.nbd.common.MyValidator;
 
 @Entity
 @NamedQueries({
-        @NamedQuery(name="Room.getAll",
-                query="SELECT r FROM Room r"),
-        @NamedQuery(name="Room.getByRoomNumber",
-                query="SELECT r FROM Room r WHERE r.roomNumber = :roomNumber")
+        @NamedQuery(name = "Room.getAll",
+                query = "SELECT r FROM Room r"),
+        @NamedQuery(name = "Room.getByRoomNumber",
+                query = "SELECT r FROM Room r WHERE r.roomNumber = :roomNumber")
 })
 @Data
 @NoArgsConstructor
@@ -18,7 +19,6 @@ public class Room {
 
     @Id
     @GeneratedValue(generator = "roomId")
-    @NotNull
     @Column(name = "room_id")
     private Long id;
 
@@ -38,5 +38,6 @@ public class Room {
         this.roomNumber = roomNumber;
         this.price = price;
         this.size = size;
+        MyValidator.validate(this);
     }
 }

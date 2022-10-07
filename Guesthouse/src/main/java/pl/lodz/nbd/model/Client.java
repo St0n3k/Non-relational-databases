@@ -1,17 +1,17 @@
 package pl.lodz.nbd.model;
 
-import com.sun.istack.NotNull;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import pl.lodz.nbd.common.MyValidator;
 
 @Entity
 @NamedQueries({
-        @NamedQuery(name="Client.getAll",
-                query="SELECT c FROM Client c"),
-        @NamedQuery(name="Client.getByPersonalId",
-                query="SELECT c FROM Client c WHERE c.personalId = :personalId")
+        @NamedQuery(name = "Client.getAll",
+                query = "SELECT c FROM Client c"),
+        @NamedQuery(name = "Client.getByPersonalId",
+                query = "SELECT c FROM Client c WHERE c.personalId = :personalId")
 })
 @Data
 @NoArgsConstructor
@@ -19,7 +19,6 @@ public class Client {
 
     @Id
     @GeneratedValue(generator = "clientId")
-    @NotNull
     @Column(name = "client_id")
     private Long clientId;
 
@@ -35,6 +34,7 @@ public class Client {
     @Column(name = "personal_id", unique = true)
     private String personalId;
 
+    @NotNull
     @ManyToOne
     @JoinColumn(name = "address_id")
     private Address address;
@@ -44,5 +44,6 @@ public class Client {
         this.lastName = lastName;
         this.personalId = personalId;
         this.address = address;
+        MyValidator.validate(this);
     }
 }
