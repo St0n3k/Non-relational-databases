@@ -5,13 +5,11 @@ import lombok.AllArgsConstructor;
 import pl.lodz.nbd.common.EntityManagerCreator;
 import pl.lodz.nbd.model.Address;
 import pl.lodz.nbd.model.Client;
-import pl.lodz.nbd.repository.impl.AddressRepository;
 import pl.lodz.nbd.repository.impl.ClientRepository;
 
 @AllArgsConstructor
 public class ClientManager {
-
-    private AddressRepository addressRepository;
+    
     private ClientRepository clientRepository;
 
     public Client registerClient(String firstName, String lastName, String personalId, String city, String street, int number) {
@@ -22,7 +20,6 @@ public class ClientManager {
             Client client = new Client(firstName, lastName, personalId, address);
 
             em.getTransaction().begin();
-            addressRepository.add(address, em);
             clientRepository.add(client, em);
             em.getTransaction().commit();
 

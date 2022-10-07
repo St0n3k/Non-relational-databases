@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import pl.lodz.nbd.common.MyValidator;
 
+import java.util.UUID;
+
 @Entity
 @NamedQueries({
         @NamedQuery(name = "Client.getAll",
@@ -15,7 +17,7 @@ import pl.lodz.nbd.common.MyValidator;
 })
 @Data
 @NoArgsConstructor
-public class Client {
+public class Client extends AbstractEntity {
 
     @Id
     @GeneratedValue(generator = "clientId")
@@ -35,11 +37,11 @@ public class Client {
     private String personalId;
 
     @NotNull
-    @ManyToOne
-    @JoinColumn(name = "address_id")
+    @Embedded
     private Address address;
 
     public Client(String firstName, String lastName, String personalId, Address address) {
+        this.setUuid(UUID.randomUUID());
         this.firstName = firstName;
         this.lastName = lastName;
         this.personalId = personalId;

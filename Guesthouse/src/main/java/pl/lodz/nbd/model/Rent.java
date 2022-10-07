@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import pl.lodz.nbd.common.MyValidator;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @NamedQueries({
@@ -17,7 +18,7 @@ import java.time.LocalDateTime;
 })
 @Data
 @NoArgsConstructor
-public class Rent {
+public class Rent extends AbstractEntity {
 
     @Id
     @GeneratedValue(generator = "rentId")
@@ -52,6 +53,7 @@ public class Rent {
 
     public Rent(LocalDateTime beginTime, LocalDateTime endTime, boolean board, double finalCost, Client client, Room room) {
         if (beginTime.isAfter(endTime)) throw new RuntimeException("Wrong chronological order");
+        this.setUuid(UUID.randomUUID());
         this.beginTime = beginTime;
         this.endTime = endTime;
         this.board = board;

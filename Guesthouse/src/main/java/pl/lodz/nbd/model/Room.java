@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import pl.lodz.nbd.common.MyValidator;
 
+import java.util.UUID;
+
 @Entity
 @NamedQueries({
         @NamedQuery(name = "Room.getAll",
@@ -15,7 +17,7 @@ import pl.lodz.nbd.common.MyValidator;
 })
 @Data
 @NoArgsConstructor
-public class Room {
+public class Room extends AbstractEntity {
 
     @Id
     @GeneratedValue(generator = "roomId")
@@ -35,6 +37,7 @@ public class Room {
     private int size;
 
     public Room(int roomNumber, double price, int size) {
+        this.setUuid(UUID.randomUUID());
         this.roomNumber = roomNumber;
         this.price = price;
         this.size = size;

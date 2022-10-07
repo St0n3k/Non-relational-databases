@@ -1,10 +1,8 @@
 package pl.lodz.nbd;
 
 
-import jakarta.persistence.EntityManager;
 import jakarta.validation.ValidationException;
 import org.junit.jupiter.api.Test;
-import pl.lodz.nbd.common.EntityManagerCreator;
 import pl.lodz.nbd.manager.ClientManager;
 import pl.lodz.nbd.manager.RentManager;
 import pl.lodz.nbd.manager.RoomManager;
@@ -12,7 +10,6 @@ import pl.lodz.nbd.model.Address;
 import pl.lodz.nbd.model.Client;
 import pl.lodz.nbd.model.Rent;
 import pl.lodz.nbd.model.Room;
-import pl.lodz.nbd.repository.impl.AddressRepository;
 import pl.lodz.nbd.repository.impl.ClientRepository;
 import pl.lodz.nbd.repository.impl.RentRepository;
 import pl.lodz.nbd.repository.impl.RoomRepository;
@@ -25,7 +22,6 @@ public class TestClass {
 
     //TODO divide test into specific test classes
 
-    private static final AddressRepository addressRepository = new AddressRepository();
     private static final RoomRepository roomRepository = new RoomRepository();
     private static final ClientRepository clientRepository = new ClientRepository();
     private static final RentRepository rentRepository = new RentRepository();
@@ -33,7 +29,7 @@ public class TestClass {
 
     @Test
     void registerClientTest() {
-        ClientManager clientManager = new ClientManager(addressRepository, clientRepository);
+        ClientManager clientManager = new ClientManager(clientRepository);
 
         //Check if clients are persisted
         assertNotNull(clientManager.registerClient("Marek", "Kowalski", "000333", "Warszawa", "Astronautów", 1));
@@ -46,15 +42,6 @@ public class TestClass {
         assertNotNull(clientManager.getByPersonalId("000333"));
         assertNotNull(clientManager.getByPersonalId("000222"));
         assertNull(clientManager.getByPersonalId("000444"));
-
-        //Check if address was persisted
-        EntityManager em = EntityManagerCreator.getEntityManager();
-        Client client = clientManager.getByPersonalId("000333");
-        Address address = client.getAddress();
-
-        assertNotNull(address.getId());
-        assertNotNull(addressRepository.getById(address.getId(), em));
-        assertNull(addressRepository.getById(10L, em));
 
     }
 
@@ -79,7 +66,7 @@ public class TestClass {
     void rentRoomTest() {
         RoomManager roomManager = new RoomManager(roomRepository);
         RentManager rentManager = new RentManager(clientRepository, roomRepository, rentRepository);
-        ClientManager clientManager = new ClientManager(addressRepository, clientRepository);
+        ClientManager clientManager = new ClientManager(clientRepository);
 
         Client client = clientManager.registerClient("Marek", "Kowalski", "000566", "Warszawa", "Astronautów", 1);
         Room room = roomManager.addRoom(100.0, 2, 400);
