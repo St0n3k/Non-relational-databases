@@ -33,7 +33,8 @@ public abstract class ClientType {
         this.name = this.getClass().getSimpleName();
     }
 
-    public double applyDiscount(double price){
-      return price * discount;
-    };
+    public double applyDiscount(double price) {
+        return price * (1.0 - discount);
+    }
+
 }

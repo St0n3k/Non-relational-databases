@@ -1,17 +1,15 @@
 package pl.lodz.nbd;
 
-import jakarta.persistence.EntityManager;
 import jakarta.validation.ValidationException;
 import org.junit.jupiter.api.Test;
-import pl.lodz.nbd.common.EntityManagerCreator;
 import pl.lodz.nbd.manager.ClientManager;
 import pl.lodz.nbd.manager.RentManager;
 import pl.lodz.nbd.manager.RoomManager;
 import pl.lodz.nbd.model.Address;
 import pl.lodz.nbd.model.Client;
 import pl.lodz.nbd.model.ClientTypes.Bronze;
-import pl.lodz.nbd.model.ClientTypes.ClientType;
-import pl.lodz.nbd.model.ClientTypes.Default;
+import pl.lodz.nbd.model.ClientTypes.Gold;
+import pl.lodz.nbd.model.ClientTypes.Silver;
 import pl.lodz.nbd.model.Rent;
 import pl.lodz.nbd.model.Room;
 import pl.lodz.nbd.repository.impl.ClientRepository;
@@ -34,24 +32,20 @@ public class TestClass {
 
 
     @Test
-    void registerClientTest() {
+    void registerAndUpdateClientTest() {
         ClientManager clientManager = new ClientManager(clientRepository, clientTypeRepository);
 
         //Check if clients are persisted
-        assertNotNull(clientManager.registerClient("Marek", "Kowalski", "000333", "Warszawa", "Astronautów", 1));
-        assertNotNull(clientManager.registerClient("Jan", "Matejko", "000222", "Łódź", "Wesoła", 32));
+        assertNotNull(clientManager.registerClient("Jakub", "Konieczny", "000333", "Warszawa", "Gorna", 16));
+        assertNotNull(clientManager.registerClient("Anna", "Matejko", "000222", "Łódź", "Wesoła", 32));
 
         //Check if client is not persisted (existing personalId)
-        assertNull(clientManager.registerClient("Jakub", "Polak", "000222", "Kraków", "Słoneczna", 133));
+        assertNull(clientManager.registerClient("Mateusz", "Polak", "000222", "Kraków", "Słoneczna", 133));
 
         //Check if getByPersonalId works properly
         assertNotNull(clientManager.getByPersonalId("000333"));
         assertNotNull(clientManager.getByPersonalId("000222"));
         assertNull(clientManager.getByPersonalId("000444"));
-
-        Client client = clientManager.getByPersonalId("000222");
-        client.setFirstName("Marcin");
-        clientManager.updateClient(client);
     }
 
     @Test
@@ -121,28 +115,36 @@ public class TestClass {
         //Null city
         assertThrows(ValidationException.class, () -> new Address(null, "Gorna", 11));
 
-        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
-            //Null address
-            assertThrows(ValidationException.class, () -> new Client("Rafał", "Strzałkowski", "0003334", null, clientTypeRepository.getByType(Default.class, em)));
-        }
-
+        //Null address and client type
+        assertThrows(ValidationException.class, () -> new Client("Rafał", "Strzałkowski", "0003334", null, null));
 
         //Null client and room
         assertThrows(ValidationException.class, () -> new Rent(LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(5), true, 1000.0, null, null));
     }
 
     @Test
-    void clientTypeTest() {
-        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
-            em.getTransaction().begin();
-            Client client = new Client("Kamil", "Graczyk", "113344", new Address("Łódź", "Gorna", 11), clientTypeRepository.getByType(Default.class, em));
+    void clientTypeDiscountTest() {
+        RoomManager roomManager = new RoomManager(roomRepository);
+        RentManager rentManager = new RentManager(clientRepository, roomRepository, rentRepository);
+        ClientManager clientManager = new ClientManager(clientRepository, clientTypeRepository);
 
-            ClientType test = clientTypeRepository.getByType(Bronze.class, em);
-            client.setClientType(test);
+        Room room = roomManager.addRoom(100.0, 2, 10);
+        Client client = clientManager.registerClient("Jarosław", "Jaki", "004566", "Wadowice", "Przybyszewskiego", 1);
 
-            clientRepository.add(client, em);
-            em.getTransaction().commit();
-        }
+        Rent defaultRent = rentManager.rentRoom(LocalDateTime.now(), LocalDateTime.now().plusDays(1), false, client.getPersonalId(), room.getRoomNumber());
 
+        client = clientManager.changeTypeTo(Bronze.class, client);
+        Rent bronzeRent = rentManager.rentRoom(LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(2), false, client.getPersonalId(), room.getRoomNumber());
+
+        client = clientManager.changeTypeTo(Silver.class, client);
+        Rent silverRent = rentManager.rentRoom(LocalDateTime.now().plusDays(2), LocalDateTime.now().plusDays(3), false, client.getPersonalId(), room.getRoomNumber());
+
+        client = clientManager.changeTypeTo(Gold.class, client);
+        Rent goldRent = rentManager.rentRoom(LocalDateTime.now().plusDays(4), LocalDateTime.now().plusDays(5), false, client.getPersonalId(), room.getRoomNumber());
+
+        assertEquals(defaultRent.getFinalCost(), 100);
+        assertEquals(bronzeRent.getFinalCost(), 100 - (0.05 * 100));
+        assertEquals(silverRent.getFinalCost(), 100 - (0.10 * 100));
+        assertEquals(goldRent.getFinalCost(), 100 - (0.15 * 100));
     }
 }

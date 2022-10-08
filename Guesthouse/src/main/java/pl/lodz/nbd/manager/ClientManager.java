@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import pl.lodz.nbd.common.EntityManagerCreator;
 import pl.lodz.nbd.model.Address;
 import pl.lodz.nbd.model.Client;
+import pl.lodz.nbd.model.ClientTypes.ClientType;
 import pl.lodz.nbd.model.ClientTypes.Default;
 import pl.lodz.nbd.repository.impl.ClientRepository;
 import pl.lodz.nbd.repository.impl.ClientTypeRepository;
@@ -20,7 +21,8 @@ public class ClientManager {
         try (EntityManager em = EntityManagerCreator.getEntityManager()) {
             //Values are validated in constructors
             Address address = new Address(city, street, number);
-            Client client = new Client(firstName, lastName, personalId, address, clientTypeRepository.getByType(Default.class, em));
+            ClientType defaultClientType = clientTypeRepository.getByType(Default.class, em);
+            Client client = new Client(firstName, lastName, personalId, address, defaultClientType);
 
             em.getTransaction().begin();
             clientRepository.add(client, em);
@@ -47,6 +49,15 @@ public class ClientManager {
             Client clientSaved = clientRepository.updateClient(client, em);
             em.getTransaction().commit();
             return clientSaved;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public Client changeTypeTo(Class type, Client client) {
+        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
+            client.setClientType(clientTypeRepository.getByType(type, em));
+            return updateClient(client);
         } catch (Exception e) {
             return null;
         }

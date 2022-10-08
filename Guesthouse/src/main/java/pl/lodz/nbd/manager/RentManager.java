@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 import lombok.AllArgsConstructor;
 import pl.lodz.nbd.common.EntityManagerCreator;
 import pl.lodz.nbd.model.Client;
+import pl.lodz.nbd.model.ClientTypes.ClientType;
 import pl.lodz.nbd.model.Rent;
 import pl.lodz.nbd.model.Room;
 import pl.lodz.nbd.repository.impl.ClientRepository;
@@ -40,7 +41,7 @@ public class RentManager {
 
             if (isColliding) return null;
 
-            double finalCost = calculateTotalCost(beginTime, endTime, room.getPrice(), board);
+            double finalCost = calculateTotalCost(beginTime, endTime, room.getPrice(), board, client.getClientType());
 
             em.getTransaction().begin();
             Rent rent = new Rent(beginTime, endTime, board, finalCost, client, room);
@@ -58,10 +59,10 @@ public class RentManager {
         return !rent.getBeginTime().isAfter(endTime) && !rent.getEndTime().isBefore(beginTime);
     }
 
-    private double calculateTotalCost(LocalDateTime beginTime, LocalDateTime endTime, double costPerDay, boolean board) {
+    private double calculateTotalCost(LocalDateTime beginTime, LocalDateTime endTime, double costPerDay, boolean board, ClientType clientType) {
         Duration duration = Duration.between(beginTime, endTime);
         if (board) costPerDay += 50; //Daily board is worth 50
-        return Math.ceil(duration.toHours() / 24.0) * costPerDay;
+        return clientType.applyDiscount(Math.ceil(duration.toHours() / 24.0) * costPerDay);
     }
 
 }
