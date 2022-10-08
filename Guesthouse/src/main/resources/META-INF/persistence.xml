@@ -15,6 +15,9 @@
 
       <property name="hibernate.show_sql" value="false" /> <!-- Show SQL in console -->
       <property name="hibernate.format_sql" value="false" /> <!-- Show SQL formatted -->
+
+      <property name="javax.persistence.sql-load-script-source"
+                value="META-INF/sql/initial_data.sql" />
     </properties>
   </persistence-unit>
 </persistence>

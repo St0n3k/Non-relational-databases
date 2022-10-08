@@ -1,16 +1,21 @@
 package pl.lodz.nbd;
 
-
+import jakarta.persistence.EntityManager;
 import jakarta.validation.ValidationException;
 import org.junit.jupiter.api.Test;
+import pl.lodz.nbd.common.EntityManagerCreator;
 import pl.lodz.nbd.manager.ClientManager;
 import pl.lodz.nbd.manager.RentManager;
 import pl.lodz.nbd.manager.RoomManager;
 import pl.lodz.nbd.model.Address;
 import pl.lodz.nbd.model.Client;
+import pl.lodz.nbd.model.ClientTypes.Bronze;
+import pl.lodz.nbd.model.ClientTypes.ClientType;
+import pl.lodz.nbd.model.ClientTypes.Default;
 import pl.lodz.nbd.model.Rent;
 import pl.lodz.nbd.model.Room;
 import pl.lodz.nbd.repository.impl.ClientRepository;
+import pl.lodz.nbd.repository.impl.ClientTypeRepository;
 import pl.lodz.nbd.repository.impl.RentRepository;
 import pl.lodz.nbd.repository.impl.RoomRepository;
 
@@ -25,11 +30,12 @@ public class TestClass {
     private static final RoomRepository roomRepository = new RoomRepository();
     private static final ClientRepository clientRepository = new ClientRepository();
     private static final RentRepository rentRepository = new RentRepository();
+    private static final ClientTypeRepository clientTypeRepository = new ClientTypeRepository();
 
 
     @Test
     void registerClientTest() {
-        ClientManager clientManager = new ClientManager(clientRepository);
+        ClientManager clientManager = new ClientManager(clientRepository, clientTypeRepository);
 
         //Check if clients are persisted
         assertNotNull(clientManager.registerClient("Marek", "Kowalski", "000333", "Warszawa", "Astronautów", 1));
@@ -50,7 +56,7 @@ public class TestClass {
 
     @Test
     void updateClientTest() {
-        ClientManager clientManager = new ClientManager(clientRepository);
+        ClientManager clientManager = new ClientManager(clientRepository, clientTypeRepository);
 
         clientManager.registerClient("Jan", "Matejko", "000211", "Łódź", "Wesoła", 32);
         Client client = clientManager.getByPersonalId("000211");
@@ -85,7 +91,7 @@ public class TestClass {
     void rentRoomTest() {
         RoomManager roomManager = new RoomManager(roomRepository);
         RentManager rentManager = new RentManager(clientRepository, roomRepository, rentRepository);
-        ClientManager clientManager = new ClientManager(clientRepository);
+        ClientManager clientManager = new ClientManager(clientRepository, clientTypeRepository);
 
         Client client = clientManager.registerClient("Marek", "Kowalski", "000566", "Warszawa", "Astronautów", 1);
         Room room = roomManager.addRoom(100.0, 2, 400);
@@ -115,10 +121,28 @@ public class TestClass {
         //Null city
         assertThrows(ValidationException.class, () -> new Address(null, "Gorna", 11));
 
-        //Null address
-        assertThrows(ValidationException.class, () -> new Client("Rafał", "Strzałkowski", "0003334", null));
+        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
+            //Null address
+            assertThrows(ValidationException.class, () -> new Client("Rafał", "Strzałkowski", "0003334", null, clientTypeRepository.getByType(Default.class, em)));
+        }
+
 
         //Null client and room
         assertThrows(ValidationException.class, () -> new Rent(LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(5), true, 1000.0, null, null));
+    }
+
+    @Test
+    void clientTypeTest() {
+        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
+            em.getTransaction().begin();
+            Client client = new Client("Kamil", "Graczyk", "113344", new Address("Łódź", "Gorna", 11), clientTypeRepository.getByType(Default.class, em));
+
+            ClientType test = clientTypeRepository.getByType(Bronze.class, em);
+            client.setClientType(test);
+
+            clientRepository.add(client, em);
+            em.getTransaction().commit();
+        }
+
     }
 }

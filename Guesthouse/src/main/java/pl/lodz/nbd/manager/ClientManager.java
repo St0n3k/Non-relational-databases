@@ -5,19 +5,22 @@ import lombok.AllArgsConstructor;
 import pl.lodz.nbd.common.EntityManagerCreator;
 import pl.lodz.nbd.model.Address;
 import pl.lodz.nbd.model.Client;
+import pl.lodz.nbd.model.ClientTypes.Default;
 import pl.lodz.nbd.repository.impl.ClientRepository;
+import pl.lodz.nbd.repository.impl.ClientTypeRepository;
 
 @AllArgsConstructor
 public class ClientManager {
 
     private ClientRepository clientRepository;
+    private ClientTypeRepository clientTypeRepository;
 
     public Client registerClient(String firstName, String lastName, String personalId, String city, String street, int number) {
 
         try (EntityManager em = EntityManagerCreator.getEntityManager()) {
             //Values are validated in constructors
             Address address = new Address(city, street, number);
-            Client client = new Client(firstName, lastName, personalId, address);
+            Client client = new Client(firstName, lastName, personalId, address, clientTypeRepository.getByType(Default.class, em));
 
             em.getTransaction().begin();
             clientRepository.add(client, em);
