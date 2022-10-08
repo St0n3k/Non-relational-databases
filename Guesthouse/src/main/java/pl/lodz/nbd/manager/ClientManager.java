@@ -9,7 +9,7 @@ import pl.lodz.nbd.repository.impl.ClientRepository;
 
 @AllArgsConstructor
 public class ClientManager {
-    
+
     private ClientRepository clientRepository;
 
     public Client registerClient(String firstName, String lastName, String personalId, String city, String street, int number) {
@@ -33,6 +33,17 @@ public class ClientManager {
     public Client getByPersonalId(String personalId) {
         try (EntityManager em = EntityManagerCreator.getEntityManager()) {
             return clientRepository.getClientByPersonalId(personalId, em);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public Client updateClient(Client client) {
+        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
+            em.getTransaction().begin();
+            Client clientSaved = clientRepository.updateClient(client, em);
+            em.getTransaction().commit();
+            return clientSaved;
         } catch (Exception e) {
             return null;
         }

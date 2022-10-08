@@ -36,4 +36,8 @@ public class ClientRepository implements Repository<Client> {
             return result.get(0);
         }
     }
+
+    public Client updateClient(Client client, EntityManager em) {
+        return em.merge(client);
+    }
 }

@@ -43,6 +43,25 @@ public class TestClass {
         assertNotNull(clientManager.getByPersonalId("000222"));
         assertNull(clientManager.getByPersonalId("000444"));
 
+        Client client = clientManager.getByPersonalId("000222");
+        client.setFirstName("Marcin");
+        clientManager.updateClient(client);
+    }
+
+    @Test
+    void updateClientTest() {
+        ClientManager clientManager = new ClientManager(clientRepository);
+
+        clientManager.registerClient("Jan", "Matejko", "000211", "Łódź", "Wesoła", 32);
+        Client client = clientManager.getByPersonalId("000211");
+        assertEquals(client.getVersion(), 0);
+
+        client.setFirstName("Marcin");
+        client = clientManager.updateClient(client);
+
+        //Check if version field incremented
+        assertEquals(client.getVersion(), 1);
+        assertEquals(client.getFirstName(), "Marcin");
     }
 
     @Test
