@@ -40,6 +40,14 @@ public class RentManager {
         }
     }
 
+    public List<Rent> getAllRentsOfClient(String personalId) {
+        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
+            return rentRepository.getByClientPersonalId(personalId, em);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public boolean removeRent(Rent rent) {
         try (EntityManager em = EntityManagerCreator.getEntityManager()) {
             em.getTransaction().begin();

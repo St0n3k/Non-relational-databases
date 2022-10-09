@@ -16,7 +16,9 @@ import java.util.UUID;
         @NamedQuery(name = "Rent.getAll",
                 query = "SELECT r FROM Rent r"),
         @NamedQuery(name = "Rent.getByRoomNumber",
-                query = "SELECT r FROM Rent r WHERE r.room.roomNumber = :roomNumber")
+                query = "SELECT r FROM Rent r WHERE r.room.roomNumber = :roomNumber"),
+        @NamedQuery(name = "Rent.getByClientPersonalId",
+                query = "SELECT r FROM Rent r WHERE r.client.personalId = :personalId")
 })
 @Data
 @NoArgsConstructor

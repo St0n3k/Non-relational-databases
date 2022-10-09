@@ -1,5 +1,6 @@
 package pl.lodz.nbd;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import pl.lodz.nbd.manager.ClientManager;
 import pl.lodz.nbd.manager.RentManager;
@@ -30,12 +31,28 @@ public class RentTest {
     private static final RentRepository rentRepository = new RentRepository();
     private static final ClientRepository clientRepository = new ClientRepository();
     private static final ClientTypeRepository clientTypeRepository = new ClientTypeRepository();
+    private static final ClientManager clientManager = new ClientManager(clientRepository, clientTypeRepository);
+    private static final RoomManager roomManager = new RoomManager(roomRepository);
+    private static final RentManager rentManager = new RentManager(clientRepository, roomRepository, rentRepository);
+
+    @BeforeAll
+    static void dataInitialization() {
+        clientManager.registerClient("Jerzy", "Dudek", "999777", "Wisła", "Karpacka", 22);
+        clientManager.registerClient("Kamil", "Stoch", "999888", "Odra", "Wiślana", 32);
+        clientManager.registerClient("Remigiusz", "Dudek", "999999", "Wrocław", "Łódzka", 44);
+
+        roomManager.addRoom(120, 2, 2137);
+        roomManager.addRoom(210, 3, 999);
+        roomManager.addRoom(102, 1, 998);
+
+        rentManager.rentRoom(LocalDateTime.now(), LocalDateTime.now().plusDays(2), true, "999999", 999);
+        rentManager.rentRoom(LocalDateTime.now().plusDays(2), LocalDateTime.now().plusDays(4), true, "999777", 999);
+        rentManager.rentRoom(LocalDateTime.now().plusDays(6), LocalDateTime.now().plusDays(10), true, "999888", 998);
+        rentManager.rentRoom(LocalDateTime.now(), LocalDateTime.now().plusDays(4), true, "999888", 998);
+    }
 
     @Test
     void rentRoomTest() {
-        RoomManager roomManager = new RoomManager(roomRepository);
-        RentManager rentManager = new RentManager(clientRepository, roomRepository, rentRepository);
-        ClientManager clientManager = new ClientManager(clientRepository, clientTypeRepository);
 
         Client client = clientManager.registerClient("Marek", "Kowalski", "000566", "Warszawa", "Astronautów", 1);
         Room room = roomManager.addRoom(100.0, 2, 400);
@@ -63,9 +80,6 @@ public class RentTest {
 
     @Test
     void optimisticLockTestSameDay() throws BrokenBarrierException, InterruptedException {
-        RoomManager roomManager = new RoomManager(roomRepository);
-        RentManager rentManager = new RentManager(clientRepository, roomRepository, rentRepository);
-        ClientManager clientManager = new ClientManager(clientRepository, clientTypeRepository);
 
         Client client = clientManager.registerClient("Marek", "Kowalski", "055566", "Warszawa", "Astronautów", 1);
         Room room = roomManager.addRoom(100.0, 2, 405);
@@ -96,9 +110,6 @@ public class RentTest {
 
     @Test
     void optimisticLockTestOverlap() throws BrokenBarrierException, InterruptedException {
-        RoomManager roomManager = new RoomManager(roomRepository);
-        RentManager rentManager = new RentManager(clientRepository, roomRepository, rentRepository);
-        ClientManager clientManager = new ClientManager(clientRepository, clientTypeRepository);
 
         Client client = clientManager.registerClient("Marek", "Kowalski", "050566", "Warszawa", "Astronautów", 1);
         Room room = roomManager.addRoom(100.0, 2, 404);
@@ -131,9 +142,6 @@ public class RentTest {
 
     @Test
     void clientTypeDiscountTest() {
-        RoomManager roomManager = new RoomManager(roomRepository);
-        RentManager rentManager = new RentManager(clientRepository, roomRepository, rentRepository);
-        ClientManager clientManager = new ClientManager(clientRepository, clientTypeRepository);
 
         Room room = roomManager.addRoom(100.0, 2, 10);
         Client client = clientManager.registerClient("Jarosław", "Jaki", "004566", "Wadowice", "Przybyszewskiego", 1);
@@ -157,23 +165,16 @@ public class RentTest {
 
     @Test
     void cascadeDeleteTest() {
-        ClientManager clientManager = new ClientManager(clientRepository, clientTypeRepository);
-        RoomManager roomManager = new RoomManager(roomRepository);
-        RentManager rentManager = new RentManager(clientRepository, roomRepository, rentRepository);
+        List<Rent> rents = rentManager.getAllRentsOfRoom(999);
+        assertEquals(2, rents.size());
+        assertTrue(roomManager.removeRoom(roomManager.getByRoomNumber(999)));
+        rents = rentManager.getAllRentsOfRoom(999);
+        assertEquals(0, rents.size());
 
-        Client client = clientManager.registerClient("Aleksander", "Wichrzyński", "123456", "Łęczyca", "Łęczycka", 15);
-        Room room = roomManager.addRoom(200, 2, 997);
-        Rent rent = rentManager.rentRoom(LocalDateTime.now(), LocalDateTime.now().plusDays(2), true, "123456", 997);
-
-        assertNotNull(rentManager.getRentById(rent.getId()));
-        assertTrue(clientManager.removeClient(client));
-        assertNull(rentManager.getRentById(rent.getId()));
-
-        Client client2 = clientManager.registerClient("Aleksander", "Wichrzyński", "123456", "Łęczyca", "Łęczycka", 15);
-        Rent rent2 = rentManager.rentRoom(LocalDateTime.now(), LocalDateTime.now().plusDays(2), true, "123456", 997);
-
-        assertNotNull(rentManager.getRentById(rent2.getId()));
-        assertTrue(roomManager.removeRoom(room));
-        assertNull(rentManager.getRentById(rent2.getId()));
+        rents = rentManager.getAllRentsOfClient("999888");
+        assertEquals(2, rents.size());
+        assertTrue(clientManager.removeClient(clientManager.getByPersonalId("999888")));
+        rents = rentManager.getAllRentsOfClient("999888");
+        assertEquals(0, rents.size());
     }
 }
