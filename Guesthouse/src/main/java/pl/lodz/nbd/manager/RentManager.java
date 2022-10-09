@@ -32,6 +32,17 @@ public class RentManager {
         }
     }
 
+    public boolean removeRent(Rent rent) {
+        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
+            em.getTransaction().begin();
+            rentRepository.remove(rent, em);
+            em.getTransaction().commit();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public Rent rentRoom(LocalDateTime beginTime, LocalDateTime endTime, boolean board, String clientPersonalId, int roomNumber) {
 
         //Guard clause

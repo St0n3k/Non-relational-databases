@@ -43,6 +43,17 @@ public class ClientManager {
         }
     }
 
+    public boolean removeClient(Client client) {
+        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
+            em.getTransaction().begin();
+            clientRepository.remove(client, em);
+            em.getTransaction().commit();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public Client updateClient(Client client) {
         try (EntityManager em = EntityManagerCreator.getEntityManager()) {
             em.getTransaction().begin();

@@ -33,4 +33,15 @@ public class RoomManager {
             return null;
         }
     }
+
+    public boolean removeRoom(Room room) {
+        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
+            em.getTransaction().begin();
+            roomRepository.remove(room, em);
+            em.getTransaction().commit();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }
