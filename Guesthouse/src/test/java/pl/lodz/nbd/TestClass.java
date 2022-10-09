@@ -122,8 +122,8 @@ public class TestClass {
         RentManager rentManager = new RentManager(clientRepository, roomRepository, rentRepository);
         ClientManager clientManager = new ClientManager(clientRepository, clientTypeRepository);
 
-        Client client = clientManager.registerClient("Marek", "Kowalski", "050566", "Warszawa", "Astronautów", 1);
-        Room room = roomManager.addRoom(100.0, 2, 404);
+        Client client = clientManager.registerClient("Marek", "Kowalski", "055566", "Warszawa", "Astronautów", 1);
+        Room room = roomManager.addRoom(100.0, 2, 405);
 
         CyclicBarrier cyclicBarrier = new CyclicBarrier(11);
         List<Thread> threads = new ArrayList<>(10);
