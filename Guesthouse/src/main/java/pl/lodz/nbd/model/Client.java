@@ -23,7 +23,7 @@ public class Client extends AbstractEntity {
     @Id
     @GeneratedValue(generator = "clientId")
     @Column(name = "client_id")
-    private Long clientId;
+    private Long id;
 
     @NotNull
     @Column(name = "first_name")

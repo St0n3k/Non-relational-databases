@@ -1,9 +1,7 @@
 package pl.lodz.nbd.repository.impl;
 
 import jakarta.persistence.EntityManager;
-import pl.lodz.nbd.model.Client;
 import pl.lodz.nbd.model.ClientTypes.ClientType;
-import pl.lodz.nbd.model.ClientTypes.Default;
 import pl.lodz.nbd.repository.Repository;
 
 import java.util.List;
@@ -16,7 +14,7 @@ public class ClientTypeRepository implements Repository<ClientType> {
 
     @Override
     public void remove(ClientType item, EntityManager em) {
-        em.remove(item);
+        em.remove(getById(item.getId(), em));
     }
 
     @Override

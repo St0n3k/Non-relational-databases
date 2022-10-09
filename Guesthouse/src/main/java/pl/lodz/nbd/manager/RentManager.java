@@ -32,6 +32,14 @@ public class RentManager {
         }
     }
 
+    public Rent getRentById(Long id) {
+        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
+            return rentRepository.getById(id, em);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public boolean removeRent(Rent rent) {
         try (EntityManager em = EntityManagerCreator.getEntityManager()) {
             em.getTransaction().begin();

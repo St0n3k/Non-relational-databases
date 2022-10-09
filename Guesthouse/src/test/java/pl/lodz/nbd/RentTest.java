@@ -154,4 +154,26 @@ public class RentTest {
         assertEquals(silverRent.getFinalCost(), 100 - (0.10 * 100));
         assertEquals(goldRent.getFinalCost(), 100 - (0.15 * 100));
     }
+
+    @Test
+    void cascadeDeleteTest() {
+        ClientManager clientManager = new ClientManager(clientRepository, clientTypeRepository);
+        RoomManager roomManager = new RoomManager(roomRepository);
+        RentManager rentManager = new RentManager(clientRepository, roomRepository, rentRepository);
+
+        Client client = clientManager.registerClient("Aleksander", "Wichrzyński", "123456", "Łęczyca", "Łęczycka", 15);
+        Room room = roomManager.addRoom(200, 2, 997);
+        Rent rent = rentManager.rentRoom(LocalDateTime.now(), LocalDateTime.now().plusDays(2), true, "123456", 997);
+
+        assertNotNull(rentManager.getRentById(rent.getId()));
+        assertTrue(clientManager.removeClient(client));
+        assertNull(rentManager.getRentById(rent.getId()));
+
+        Client client2 = clientManager.registerClient("Aleksander", "Wichrzyński", "123456", "Łęczyca", "Łęczycka", 15);
+        Rent rent2 = rentManager.rentRoom(LocalDateTime.now(), LocalDateTime.now().plusDays(2), true, "123456", 997);
+
+        assertNotNull(rentManager.getRentById(rent2.getId()));
+        assertTrue(roomManager.removeRoom(room));
+        assertNull(rentManager.getRentById(rent2.getId()));
+    }
 }

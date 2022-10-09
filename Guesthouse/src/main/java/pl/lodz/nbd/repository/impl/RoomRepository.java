@@ -14,7 +14,7 @@ public class RoomRepository implements Repository<Room> {
 
     @Override
     public void remove(Room room, EntityManager em) {
-        em.remove(room);
+        em.remove(getById(room.getId(), em));
     }
 
     @Override

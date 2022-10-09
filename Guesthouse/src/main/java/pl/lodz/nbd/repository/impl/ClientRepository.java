@@ -14,7 +14,7 @@ public class ClientRepository implements Repository<Client> {
 
     @Override
     public void remove(Client client, EntityManager em) {
-        em.remove(client);
+        em.remove(getById(client.getId(), em));
     }
 
     @Override

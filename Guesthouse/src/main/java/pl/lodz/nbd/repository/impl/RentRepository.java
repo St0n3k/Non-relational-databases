@@ -14,7 +14,7 @@ public class RentRepository implements Repository<Rent> {
 
     @Override
     public void remove(Rent rent, EntityManager em) {
-        em.remove(rent);
+        em.remove(getById(rent.getId(), em));
     }
 
     @Override
