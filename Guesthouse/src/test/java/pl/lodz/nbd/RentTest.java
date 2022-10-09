@@ -1,11 +1,9 @@
 package pl.lodz.nbd;
 
-import jakarta.validation.ValidationException;
 import org.junit.jupiter.api.Test;
 import pl.lodz.nbd.manager.ClientManager;
 import pl.lodz.nbd.manager.RentManager;
 import pl.lodz.nbd.manager.RoomManager;
-import pl.lodz.nbd.model.Address;
 import pl.lodz.nbd.model.Client;
 import pl.lodz.nbd.model.ClientTypes.Bronze;
 import pl.lodz.nbd.model.ClientTypes.Gold;
@@ -26,65 +24,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TestClass {
-
-    //TODO divide test into specific test classes
+public class RentTest {
 
     private static final RoomRepository roomRepository = new RoomRepository();
-    private static final ClientRepository clientRepository = new ClientRepository();
     private static final RentRepository rentRepository = new RentRepository();
+    private static final ClientRepository clientRepository = new ClientRepository();
     private static final ClientTypeRepository clientTypeRepository = new ClientTypeRepository();
-
-
-    @Test
-    void registerAndUpdateClientTest() {
-        ClientManager clientManager = new ClientManager(clientRepository, clientTypeRepository);
-
-        //Check if clients are persisted
-        assertNotNull(clientManager.registerClient("Jakub", "Konieczny", "000333", "Warszawa", "Gorna", 16));
-        assertNotNull(clientManager.registerClient("Anna", "Matejko", "000222", "Łódź", "Wesoła", 32));
-
-        //Check if client is not persisted (existing personalId)
-        assertNull(clientManager.registerClient("Mateusz", "Polak", "000222", "Kraków", "Słoneczna", 133));
-
-        //Check if getByPersonalId works properly
-        assertNotNull(clientManager.getByPersonalId("000333"));
-        assertNotNull(clientManager.getByPersonalId("000222"));
-        assertNull(clientManager.getByPersonalId("000444"));
-    }
-
-    @Test
-    void updateClientTest() {
-        ClientManager clientManager = new ClientManager(clientRepository, clientTypeRepository);
-
-        clientManager.registerClient("Jan", "Matejko", "000211", "Łódź", "Wesoła", 32);
-        Client client = clientManager.getByPersonalId("000211");
-        assertEquals(client.getVersion(), 0);
-
-        client.setFirstName("Marcin");
-        client = clientManager.updateClient(client);
-
-        //Check if version field incremented
-        assertEquals(client.getVersion(), 1);
-        assertEquals(client.getFirstName(), "Marcin");
-    }
-
-    @Test
-    void addRoomTest() {
-        RoomManager roomManager = new RoomManager(roomRepository);
-
-        //Check if rooms are persisted
-        assertNotNull(roomManager.addRoom(100.0, 2, 100));
-        assertNotNull(roomManager.addRoom(200.0, 3, 101));
-
-        //Check if room is not persisted(existing room number)
-        assertNull(roomManager.addRoom(1000.0, 5, 100));
-
-        //Check if getRoomByNumber works properly
-        assertNotNull(roomManager.getByRoomNumber(100));
-        assertNotNull(roomManager.getByRoomNumber(101));
-        assertNull(roomManager.getByRoomNumber(300));
-    }
 
     @Test
     void rentRoomTest() {
@@ -125,11 +70,12 @@ public class TestClass {
         Client client = clientManager.registerClient("Marek", "Kowalski", "055566", "Warszawa", "Astronautów", 1);
         Room room = roomManager.addRoom(100.0, 2, 405);
 
-        CyclicBarrier cyclicBarrier = new CyclicBarrier(11);
-        List<Thread> threads = new ArrayList<>(10);
+        int threadNumber = 10;
+        CyclicBarrier cyclicBarrier = new CyclicBarrier(threadNumber + 1);
+        List<Thread> threads = new ArrayList<>(threadNumber);
         AtomicInteger numberFinished = new AtomicInteger();
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < threadNumber; i++) {
             threads.add(new Thread(() -> {
                 try {
                     cyclicBarrier.await();
@@ -143,7 +89,7 @@ public class TestClass {
 
         threads.forEach(Thread::start);
         cyclicBarrier.await();
-        while (numberFinished.get() != 10) {
+        while (numberFinished.get() != threadNumber) {
         }
         assertEquals(rentManager.getAllRentsOfRoom(room.getRoomNumber()).size(), 1);
     }
@@ -181,19 +127,6 @@ public class TestClass {
         while (numberFinished.get() != threadNumber) {
         }
         assertEquals(rentManager.getAllRentsOfRoom(room.getRoomNumber()).size(), 2);
-    }
-
-
-    @Test
-    void validatorTest() {
-        //Null city
-        assertThrows(ValidationException.class, () -> new Address(null, "Gorna", 11));
-
-        //Null address and client type
-        assertThrows(ValidationException.class, () -> new Client("Rafał", "Strzałkowski", "0003334", null, null));
-
-        //Null client and room
-        assertThrows(ValidationException.class, () -> new Rent(LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(5), true, 1000.0, null, null));
     }
 
     @Test

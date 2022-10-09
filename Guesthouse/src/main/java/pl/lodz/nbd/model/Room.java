@@ -1,6 +1,7 @@
 package pl.lodz.nbd.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,14 +27,17 @@ public class Room extends AbstractEntity {
 
     @NotNull
     @Column(name = "room_number", unique = true)
+    @Min(value = 1)
     private int roomNumber;
 
     @NotNull
     @Column
+    @Min(value = 1)
     private double price;
 
     @NotNull
     @Column
+    @Min(value = 1)
     private int size;
 
     public Room(int roomNumber, double price, int size) {
