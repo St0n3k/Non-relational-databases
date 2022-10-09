@@ -1,6 +1,8 @@
 package pl.lodz.nbd.manager;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.RollbackException;
 import lombok.AllArgsConstructor;
 import pl.lodz.nbd.common.EntityManagerCreator;
 import pl.lodz.nbd.model.Client;
@@ -22,15 +24,30 @@ public class RentManager {
     private RoomRepository roomRepository;
     private RentRepository rentRepository;
 
+    public List<Rent> getAllRentsOfRoom(int roomNumber) {
+        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
+            return rentRepository.getByRoomNumber(roomNumber, em);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public Rent rentRoom(LocalDateTime beginTime, LocalDateTime endTime, boolean board, String clientPersonalId, int roomNumber) {
 
         //Guard clause
         if (beginTime.isAfter(endTime)) return null;
 
+        return repeatableTransaction(beginTime, endTime, board, clientPersonalId, roomNumber);
+    }
+
+    private Rent repeatableTransaction(LocalDateTime beginTime, LocalDateTime endTime, boolean board, String clientPersonalId, int roomNumber) {
         try (EntityManager em = EntityManagerCreator.getEntityManager()) {
+
+            em.getTransaction().begin();
 
             Client client = clientRepository.getClientByPersonalId(clientPersonalId, em);
             Room room = roomRepository.getByRoomNumber(roomNumber, em);
+            em.lock(room, LockModeType.OPTIMISTIC_FORCE_INCREMENT);
 
             if (client == null || room == null) return null;
 
@@ -43,13 +60,17 @@ public class RentManager {
 
             double finalCost = calculateTotalCost(beginTime, endTime, room.getPrice(), board, client.getClientType());
 
-            em.getTransaction().begin();
             Rent rent = new Rent(beginTime, endTime, board, finalCost, client, room);
             rentRepository.add(rent, em);
+
             em.getTransaction().commit();
 
             return rent;
 
+        } catch (RollbackException e) {
+//            System.out.println("Repeating transaction");
+//            e.printStackTrace();5
+            return repeatableTransaction(beginTime, endTime, board, clientPersonalId, roomNumber);
         } catch (Exception e) {
             return null;
         }

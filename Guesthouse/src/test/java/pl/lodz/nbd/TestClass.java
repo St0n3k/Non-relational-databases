@@ -18,6 +18,11 @@ import pl.lodz.nbd.repository.impl.RentRepository;
 import pl.lodz.nbd.repository.impl.RoomRepository;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -109,6 +114,75 @@ public class TestClass {
         //Rent create fail, room doesn't exist
         assertNull(rentManager.rentRoom(LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(5), true, client.getPersonalId(), 999));
     }
+
+
+    @Test
+    void optimisticLockTestSameDay() throws BrokenBarrierException, InterruptedException {
+        RoomManager roomManager = new RoomManager(roomRepository);
+        RentManager rentManager = new RentManager(clientRepository, roomRepository, rentRepository);
+        ClientManager clientManager = new ClientManager(clientRepository, clientTypeRepository);
+
+        Client client = clientManager.registerClient("Marek", "Kowalski", "050566", "Warszawa", "Astronautów", 1);
+        Room room = roomManager.addRoom(100.0, 2, 404);
+
+        CyclicBarrier cyclicBarrier = new CyclicBarrier(11);
+        List<Thread> threads = new ArrayList<>(10);
+        AtomicInteger numberFinished = new AtomicInteger();
+
+        for (int i = 0; i < 10; i++) {
+            threads.add(new Thread(() -> {
+                try {
+                    cyclicBarrier.await();
+                } catch (InterruptedException | BrokenBarrierException e) {
+                    throw new RuntimeException(e);
+                }
+                rentManager.rentRoom(LocalDateTime.now().plusDays(40), LocalDateTime.now().plusDays(41), false, client.getPersonalId(), room.getRoomNumber());
+                numberFinished.getAndIncrement();
+            }));
+        }
+
+        threads.forEach(Thread::start);
+        cyclicBarrier.await();
+        while (numberFinished.get() != 10) {
+        }
+        assertEquals(rentManager.getAllRentsOfRoom(room.getRoomNumber()).size(), 1);
+    }
+
+    @Test
+    void optimisticLockTestOverlap() throws BrokenBarrierException, InterruptedException {
+        RoomManager roomManager = new RoomManager(roomRepository);
+        RentManager rentManager = new RentManager(clientRepository, roomRepository, rentRepository);
+        ClientManager clientManager = new ClientManager(clientRepository, clientTypeRepository);
+
+        Client client = clientManager.registerClient("Marek", "Kowalski", "050566", "Warszawa", "Astronautów", 1);
+        Room room = roomManager.addRoom(100.0, 2, 404);
+
+        int threadNumber = 4;
+        CyclicBarrier cyclicBarrier = new CyclicBarrier(threadNumber + 1);
+        List<Thread> threads = new ArrayList<>(threadNumber);
+        AtomicInteger numberFinished = new AtomicInteger();
+
+        LocalDateTime localDateTime = LocalDateTime.now();
+        for (int i = 0; i < threadNumber; i++) {
+            int finalI = i;
+            threads.add(new Thread(() -> {
+                try {
+                    cyclicBarrier.await();
+                } catch (InterruptedException | BrokenBarrierException e) {
+                    throw new RuntimeException(e);
+                }
+                rentManager.rentRoom(localDateTime.plusDays(100 + finalI), localDateTime.plusDays(100 + finalI + 2).minusHours(1), false, client.getPersonalId(), room.getRoomNumber());
+                numberFinished.getAndIncrement();
+            }));
+        }
+
+        threads.forEach(Thread::start);
+        cyclicBarrier.await();
+        while (numberFinished.get() != threadNumber) {
+        }
+        assertEquals(rentManager.getAllRentsOfRoom(room.getRoomNumber()).size(), 2);
+    }
+
 
     @Test
     void validatorTest() {
