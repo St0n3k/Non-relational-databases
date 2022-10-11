@@ -3,6 +3,7 @@ package pl.lodz.nbd.model.ClientTypes;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import pl.lodz.nbd.model.AbstractEntity;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
@@ -14,7 +15,7 @@ import lombok.Data;
                 query = "SELECT ct FROM ClientType ct WHERE ct.name LIKE :type")
 })
 @Data
-public abstract class ClientType {
+public abstract class ClientType extends AbstractEntity {
 
     @Column
     @Id
