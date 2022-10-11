@@ -96,7 +96,7 @@ public class RentManager {
 
         } catch (RollbackException e) {
 //            System.out.println("Repeating transaction");
-//            e.printStackTrace();5
+//            e.printStackTrace();
             return repeatableTransaction(beginTime, endTime, board, clientPersonalId, roomNumber);
         } catch (Exception e) {
             return null;

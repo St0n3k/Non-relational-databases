@@ -1,6 +1,5 @@
 package pl.lodz.nbd;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import pl.lodz.nbd.manager.ClientManager;
 import pl.lodz.nbd.manager.RentManager;
@@ -35,8 +34,7 @@ public class RentTest {
     private static final RoomManager roomManager = new RoomManager(roomRepository);
     private static final RentManager rentManager = new RentManager(clientRepository, roomRepository, rentRepository);
 
-    @BeforeAll
-    static void dataInitialization() {
+    void initializeData() {
         clientManager.registerClient("Jerzy", "Dudek", "999777", "Wisła", "Karpacka", 22);
         clientManager.registerClient("Kamil", "Stoch", "999888", "Odra", "Wiślana", 32);
         clientManager.registerClient("Remigiusz", "Dudek", "999999", "Wrocław", "Łódzka", 44);
@@ -165,6 +163,8 @@ public class RentTest {
 
     @Test
     void cascadeDeleteTest() {
+        initializeData();
+        
         List<Rent> rents = rentManager.getAllRentsOfRoom(999);
         assertEquals(2, rents.size());
         assertTrue(roomManager.removeRoom(roomManager.getByRoomNumber(999)));
