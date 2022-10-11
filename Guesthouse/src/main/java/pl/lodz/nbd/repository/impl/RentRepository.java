@@ -34,4 +34,8 @@ public class RentRepository implements Repository<Rent> {
     public List<Rent> getByClientPersonalId(String personalId, EntityManager em) {
         return em.createNamedQuery("Rent.getByClientPersonalId", Rent.class).setParameter("personalId", personalId).getResultList();
     }
+
+    public Rent update(Rent rent, EntityManager em) {
+        return em.merge(rent);
+    }
 }
