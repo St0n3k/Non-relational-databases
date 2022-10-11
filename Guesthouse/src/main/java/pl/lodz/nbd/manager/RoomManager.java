@@ -26,6 +26,17 @@ public class RoomManager {
         }
     }
 
+    public Room updateRoom(Room room) {
+        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
+            em.getTransaction().begin();
+            Room roomSaved = roomRepository.update(room, em);
+            em.getTransaction().commit();
+            return roomSaved;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public Room getByRoomNumber(int number) {
         try (EntityManager em = EntityManagerCreator.getEntityManager()) {
             return roomRepository.getByRoomNumber(number, em);

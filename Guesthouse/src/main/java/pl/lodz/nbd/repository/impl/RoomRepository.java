@@ -23,6 +23,11 @@ public class RoomRepository implements Repository<Room> {
     }
 
     @Override
+    public Room update(Room item, EntityManager em) {
+        return em.merge(item);
+    }
+
+    @Override
     public List<Room> getAll(EntityManager em) {
         return em.createNamedQuery("Room.getAll", Room.class)
                 .getResultList();

@@ -12,5 +12,7 @@ public interface Repository<T> {
 
     T getById(Long id, EntityManager em);
 
+    T update(T item, EntityManager em);
+
     List<T> getAll(EntityManager em);
 }

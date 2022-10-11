@@ -57,7 +57,7 @@ public class ClientManager {
     public Client updateClient(Client client) {
         try (EntityManager em = EntityManagerCreator.getEntityManager()) {
             em.getTransaction().begin();
-            Client clientSaved = clientRepository.updateClient(client, em);
+            Client clientSaved = clientRepository.update(client, em);
             em.getTransaction().commit();
             return clientSaved;
         } catch (Exception e) {
