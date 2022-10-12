@@ -78,10 +78,11 @@ public class RentManager {
 
             if (client == null || room == null) return null;
 
-            List<Rent> roomRentList = rentRepository.getByRoomNumber(roomNumber, em);
+            //List<Rent> roomRentList = rentRepository.getByRoomNumber(roomNumber, em);
+            boolean isColliding = rentRepository.isColliding(beginTime, endTime, roomNumber, em);
 
-            boolean isColliding = roomRentList.stream()
-                    .anyMatch(rent -> isColliding(rent, beginTime, endTime));
+//            boolean isColliding = roomRentList.stream()
+//                    .anyMatch(rent -> isColliding(rent, beginTime, endTime));
 
             if (isColliding) return null;
 
@@ -96,7 +97,7 @@ public class RentManager {
 
         } catch (RollbackException e) {
 //            System.out.println("Repeating transaction");
-//            e.printStackTrace();5
+//            e.printStackTrace();
             return repeatableTransaction(beginTime, endTime, board, clientPersonalId, roomNumber);
         } catch (Exception e) {
             return null;

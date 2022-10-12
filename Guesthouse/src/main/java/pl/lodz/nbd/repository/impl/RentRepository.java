@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 import pl.lodz.nbd.model.Rent;
 import pl.lodz.nbd.repository.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class RentRepository implements Repository<Rent> {
@@ -33,5 +34,15 @@ public class RentRepository implements Repository<Rent> {
 
     public List<Rent> getByClientPersonalId(String personalId, EntityManager em) {
         return em.createNamedQuery("Rent.getByClientPersonalId", Rent.class).setParameter("personalId", personalId).getResultList();
+    }
+
+    public boolean isColliding(LocalDateTime beginDate, LocalDateTime endDate, int roomNumber, EntityManager em) {
+        List<Rent> rentsColliding = em.createNamedQuery("Rent.getRentsColliding", Rent.class)
+                .setParameter("beginDate", beginDate)
+                .setParameter("endDate", endDate)
+                .setParameter("roomNumber", roomNumber)
+                .getResultList();
+
+        return !rentsColliding.isEmpty();
     }
 }

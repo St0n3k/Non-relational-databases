@@ -18,7 +18,9 @@ import java.util.UUID;
         @NamedQuery(name = "Rent.getByRoomNumber",
                 query = "SELECT r FROM Rent r WHERE r.room.roomNumber = :roomNumber"),
         @NamedQuery(name = "Rent.getByClientPersonalId",
-                query = "SELECT r FROM Rent r WHERE r.client.personalId = :personalId")
+                query = "SELECT r FROM Rent r WHERE r.client.personalId = :personalId"),
+        @NamedQuery(name = "Rent.getRentsColliding",
+                query = "SELECT r FROM Rent r WHERE (r.room.roomNumber = :roomNumber AND ((r.beginTime between :beginDate and :endDate) OR (r.endTime between :beginDate and :endDate)))")
 })
 @Data
 @NoArgsConstructor
