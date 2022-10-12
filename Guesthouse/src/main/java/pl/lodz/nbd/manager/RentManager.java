@@ -67,6 +67,27 @@ public class RentManager {
         return repeatableTransaction(beginTime, endTime, board, clientPersonalId, roomNumber);
     }
 
+    public Rent updateRentBoard(Long rentId, boolean board) {
+        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
+            em.getTransaction().begin();
+            Rent rentToModify = rentRepository.getById(rentId, em);
+            rentToModify.setBoard(board);
+            double newCost = calculateTotalCost(
+                    rentToModify.getBeginTime(),
+                    rentToModify.getEndTime(),
+                    rentToModify.getRoom().getPrice(),
+                    rentToModify.isBoard(),
+                    rentToModify.getClient().getClientType()
+            );
+            rentToModify.setFinalCost(newCost);
+            Rent rentSaved = rentRepository.update(rentToModify, em);
+            em.getTransaction().commit();
+            return rentSaved;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     private Rent repeatableTransaction(LocalDateTime beginTime, LocalDateTime endTime, boolean board, String clientPersonalId, int roomNumber) {
         try (EntityManager em = EntityManagerCreator.getEntityManager()) {
 

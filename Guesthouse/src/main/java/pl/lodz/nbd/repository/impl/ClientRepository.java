@@ -37,7 +37,8 @@ public class ClientRepository implements Repository<Client> {
         }
     }
 
-    public Client updateClient(Client client, EntityManager em) {
+    @Override
+    public Client update(Client client, EntityManager em) {
         return em.merge(client);
     }
 }

@@ -1,6 +1,5 @@
 package pl.lodz.nbd;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import pl.lodz.nbd.manager.ClientManager;
 import pl.lodz.nbd.manager.RentManager;
@@ -35,8 +34,7 @@ public class RentTest {
     private static final RoomManager roomManager = new RoomManager(roomRepository);
     private static final RentManager rentManager = new RentManager(clientRepository, roomRepository, rentRepository);
 
-    @BeforeAll
-    static void dataInitialization() {
+    void initializeData() {
         clientManager.registerClient("Jerzy", "Dudek", "999777", "Wisła", "Karpacka", 22);
         clientManager.registerClient("Kamil", "Stoch", "999888", "Odra", "Wiślana", 32);
         clientManager.registerClient("Remigiusz", "Dudek", "999999", "Wrocław", "Łódzka", 44);
@@ -49,6 +47,7 @@ public class RentTest {
         rentManager.rentRoom(LocalDateTime.now().plusDays(2), LocalDateTime.now().plusDays(4), true, "999777", 999);
         rentManager.rentRoom(LocalDateTime.now().plusDays(6), LocalDateTime.now().plusDays(10), true, "999888", 998);
         rentManager.rentRoom(LocalDateTime.now(), LocalDateTime.now().plusDays(4), true, "999888", 998);
+        rentManager.rentRoom(LocalDateTime.now().plusDays(1300), LocalDateTime.now().plusDays(1400), true, "999777", 2137);
     }
 
     @Test
@@ -144,7 +143,7 @@ public class RentTest {
     void clientTypeDiscountTest() {
 
         Room room = roomManager.addRoom(100.0, 2, 10);
-        Client client = clientManager.registerClient("Jarosław", "Jaki", "004566", "Wadowice", "Przybyszewskiego", 1);
+        Client client = clientManager.registerClient("Jarosław", "Jaki", "604566", "Wadowice", "Przybyszewskiego", 1);
 
         Rent defaultRent = rentManager.rentRoom(LocalDateTime.now(), LocalDateTime.now().plusDays(1), false, client.getPersonalId(), room.getRoomNumber());
 
@@ -165,6 +164,8 @@ public class RentTest {
 
     @Test
     void cascadeDeleteTest() {
+        initializeData();
+
         List<Rent> rents = rentManager.getAllRentsOfRoom(999);
         assertEquals(2, rents.size());
         assertTrue(roomManager.removeRoom(roomManager.getByRoomNumber(999)));
@@ -176,5 +177,28 @@ public class RentTest {
         assertTrue(clientManager.removeClient(clientManager.getByPersonalId("999888")));
         rents = rentManager.getAllRentsOfClient("999888");
         assertEquals(0, rents.size());
+
+        List<Rent> rentsToBeRemoved = rentManager.getAllRentsOfRoom(2137);
+        assertEquals(1, rentsToBeRemoved.size());
+        
+        rentManager.removeRent(rentsToBeRemoved.get(0));
+
+        rentsToBeRemoved = rentManager.getAllRentsOfRoom(2137);
+        assertEquals(0, rentsToBeRemoved.size());
+    }
+
+    @Test
+    void updateRentBoardTest() {
+        Client client = clientManager.registerClient("Marek", "Kowalski", "140566", "Warszawa", "Astronautów", 1);
+        Room room = roomManager.addRoom(100.0, 2, 1400);
+
+        Rent rent = rentManager.rentRoom(LocalDateTime.now().plusDays(300), LocalDateTime.now().plusDays(320), false, client.getPersonalId(), room.getRoomNumber());
+        assertEquals(20 * 100, rent.getFinalCost());
+        rentManager.updateRentBoard(rent.getId(), true);
+
+        rent = rentManager.getRentById(rent.getId());
+
+        //Plus 50 per day, because of board option
+        assertEquals(20 * (100 + 50), rent.getFinalCost());
     }
 }

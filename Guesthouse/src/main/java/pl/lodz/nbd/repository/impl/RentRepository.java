@@ -36,6 +36,10 @@ public class RentRepository implements Repository<Rent> {
         return em.createNamedQuery("Rent.getByClientPersonalId", Rent.class).setParameter("personalId", personalId).getResultList();
     }
 
+    public Rent update(Rent rent, EntityManager em) {
+        return em.merge(rent);
+    }
+
     public boolean isColliding(LocalDateTime beginDate, LocalDateTime endDate, int roomNumber, EntityManager em) {
         List<Rent> rentsColliding = em.createNamedQuery("Rent.getRentsColliding", Rent.class)
                 .setParameter("beginDate", beginDate)

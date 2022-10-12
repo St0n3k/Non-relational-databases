@@ -23,6 +23,11 @@ public class ClientTypeRepository implements Repository<ClientType> {
     }
 
     @Override
+    public ClientType update(ClientType item, EntityManager em) {
+        return em.merge(item);
+    }
+
+    @Override
     public List<ClientType> getAll(EntityManager em) {
         return em.createNamedQuery("ClientType.getAll", ClientType.class).getResultList();
     }
