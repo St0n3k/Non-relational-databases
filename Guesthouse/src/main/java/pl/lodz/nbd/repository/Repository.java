@@ -5,14 +5,13 @@ import jakarta.persistence.EntityManager;
 import java.util.List;
 
 public interface Repository<T> {
+    T add(T item);
 
-    void add(T item, EntityManager em);
+    boolean remove(T item);
 
-    void remove(T item, EntityManager em);
+    T getById(Long id);
 
-    T getById(Long id, EntityManager em);
+    T update(T item);
 
-    T update(T item, EntityManager em);
-
-    List<T> getAll(EntityManager em);
+    List<T> getAll();
 }

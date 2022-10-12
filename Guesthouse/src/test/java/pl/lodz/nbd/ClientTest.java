@@ -41,11 +41,11 @@ public class ClientTest {
         assertEquals(client.getVersion(), 0);
 
         client.setFirstName("Marcin");
-        client = clientManager.updateClient(client);
+        Client client2 = clientManager.updateClient(client);
 
         //Check if version field incremented
-        assertEquals(client.getVersion(), 1);
-        assertEquals(client.getFirstName(), "Marcin");
+        assertEquals(client2.getVersion(), 1);
+        assertEquals(client2.getFirstName(), "Marcin");
     }
 
 
