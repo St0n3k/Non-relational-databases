@@ -17,6 +17,4 @@ public abstract class AbstractEntity implements Serializable {
 
     @Version
     private long version;
-
-    //TODO read about version (used to optimistic barrier) and think if we need UUID(to replace primary keys?)
 }

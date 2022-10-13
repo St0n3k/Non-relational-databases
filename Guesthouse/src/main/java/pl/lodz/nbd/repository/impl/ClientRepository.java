@@ -3,7 +3,6 @@ package pl.lodz.nbd.repository.impl;
 import jakarta.persistence.EntityManager;
 import pl.lodz.nbd.common.EntityManagerCreator;
 import pl.lodz.nbd.model.Client;
-import pl.lodz.nbd.model.Room;
 import pl.lodz.nbd.repository.Repository;
 
 import java.util.List;
@@ -25,7 +24,7 @@ public class ClientRepository implements Repository<Client> {
     public boolean remove(Client client) {
         try (EntityManager em = EntityManagerCreator.getEntityManager()) {
             em.getTransaction().begin();
-            em.remove(em.find(Client.class, client.getId()));
+            em.remove(em.merge(client));
             em.getTransaction().commit();
             return true;
         } catch (Exception e) {

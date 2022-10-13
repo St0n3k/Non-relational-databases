@@ -4,7 +4,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.RollbackException;
 import pl.lodz.nbd.common.EntityManagerCreator;
-import pl.lodz.nbd.model.Client;
 import pl.lodz.nbd.model.Rent;
 import pl.lodz.nbd.model.Room;
 import pl.lodz.nbd.repository.Repository;
@@ -14,7 +13,9 @@ import java.util.List;
 
 public class RentRepository implements Repository<Rent> {
 
-    private Rent repeatableTransaction(Rent rent) {
+
+    @Override
+    public Rent add(Rent rent) {
         try (EntityManager em = EntityManagerCreator.getEntityManager()) {
             em.getTransaction().begin();
 
@@ -33,18 +34,12 @@ public class RentRepository implements Repository<Rent> {
 
             em.getTransaction().commit();
             return rent;
-        }
-    }
-
-    @Override
-    public Rent add(Rent rent) {
-        try {
-            return repeatableTransaction(rent);
-
-        } catch (RollbackException re) {
-            System.out.println("Repeating");
-            return repeatableTransaction(rent);
-
+        } catch (RollbackException e) {
+            System.out.println("Repeating transaction");
+            //We have to set id to null, because in transaction,
+            //rent gets id on persist, but on failed transaction it not gets back to null
+            rent.setId(null);
+            return add(rent);
         } catch (Exception e) {
             return null;
         }
@@ -54,7 +49,7 @@ public class RentRepository implements Repository<Rent> {
     public boolean remove(Rent rent) {
         try (EntityManager em = EntityManagerCreator.getEntityManager()) {
             em.getTransaction().begin();
-            em.remove(em.find(Rent.class, rent.getId()));
+            em.remove(em.merge(rent));
             em.getTransaction().commit();
             return true;
         } catch (Exception e) {
@@ -103,13 +98,14 @@ public class RentRepository implements Repository<Rent> {
         try (EntityManager em = EntityManagerCreator.getEntityManager()) {
             List<Rent> rentsColliding =
                     em.createNamedQuery("Rent.getRentsColliding", Rent.class)
-                    .setParameter("beginDate", beginDate)
-                    .setParameter("endDate", endDate)
-                    .setParameter("roomNumber", roomNumber)
-                    .getResultList();
+                            .setParameter("beginDate", beginDate)
+                            .setParameter("endDate", endDate)
+                            .setParameter("roomNumber", roomNumber)
+                            .getResultList();
 
             return !rentsColliding.isEmpty();
         } catch (Exception e) {
+            System.out.println("Unexpected exc");
             return true;
         }
     }

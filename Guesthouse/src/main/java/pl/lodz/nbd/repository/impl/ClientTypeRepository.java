@@ -2,9 +2,7 @@ package pl.lodz.nbd.repository.impl;
 
 import jakarta.persistence.EntityManager;
 import pl.lodz.nbd.common.EntityManagerCreator;
-import pl.lodz.nbd.model.Client;
 import pl.lodz.nbd.model.ClientTypes.ClientType;
-import pl.lodz.nbd.model.Room;
 import pl.lodz.nbd.repository.Repository;
 
 import java.util.List;
@@ -26,7 +24,7 @@ public class ClientTypeRepository implements Repository<ClientType> {
     public boolean remove(ClientType clientType) {
         try (EntityManager em = EntityManagerCreator.getEntityManager()) {
             em.getTransaction().begin();
-            em.remove(em.find(ClientType.class, clientType.getId()));
+            em.remove(em.merge(clientType));
             em.getTransaction().commit();
             return true;
         } catch (Exception e) {

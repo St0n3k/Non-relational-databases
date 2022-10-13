@@ -6,6 +6,7 @@ import lombok.Data;
 import pl.lodz.nbd.model.AbstractEntity;
 
 @Entity
+@Table(name = "client_type")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "type")
 @NamedQueries({
