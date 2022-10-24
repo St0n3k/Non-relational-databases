@@ -1,20 +1,26 @@
 package pl.lodz.nbd.repository.impl;
 
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
 import pl.lodz.nbd.model.Room;
-import pl.lodz.nbd.repository.Repository;
+import pl.lodz.nbd.repository.AbstractMongoRepository;
 
-public class RoomRepository implements Repository<Room> {
-//    @Override
-//    public Room add(Room room) {
-//        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
-//            em.getTransaction().begin();
-//            em.persist(room);
-//            em.getTransaction().commit();
-//            return room;
-//        } catch (Exception e) {
-//            return null;
-//        }
-//    }
+public class RoomRepository extends AbstractMongoRepository {
+
+    private final MongoClient mongoClient = MongoClients.create(clientSettings);
+    private final MongoDatabase mongoDatabase = mongoClient.getDatabase("nbd");
+
+
+    public Room add(Room room) {
+        Document document = new Document("id", room.getUuid())
+                .append("price", room.getPrice())
+                .append("size", room.getSize())
+                .append("number", room.getRoomNumber());
+        System.out.println(mongoDatabase.getCollection("rooms").insertOne(document));
+        return room;
+    }
 //
 //    @Override
 //    public boolean remove(Room room) {

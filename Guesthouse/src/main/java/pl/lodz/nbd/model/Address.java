@@ -2,7 +2,6 @@ package pl.lodz.nbd.model;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import pl.lodz.nbd.common.MyValidator;
 
 
 @Data
@@ -21,6 +20,5 @@ public class Address {
         this.city = city;
         this.street = street;
         this.houseNumber = houseNumber;
-        MyValidator.validate(this);
     }
 }

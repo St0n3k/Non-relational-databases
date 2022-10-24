@@ -7,12 +7,7 @@ import pl.lodz.nbd.model.AbstractEntity;
 @Data
 public abstract class ClientType extends AbstractEntity {
 
-
-    private Long id;
-
-
     private String name;
-
 
     private double discount;
 

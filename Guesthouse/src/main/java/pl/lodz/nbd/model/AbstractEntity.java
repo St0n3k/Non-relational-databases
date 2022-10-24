@@ -9,9 +9,6 @@ import java.util.UUID;
 @Data
 public abstract class AbstractEntity implements Serializable {
 
+    private UUID uuid = UUID.randomUUID();
 
-    private UUID uuid;
-
-
-    private long version;
 }
