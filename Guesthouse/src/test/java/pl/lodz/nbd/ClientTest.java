@@ -2,9 +2,12 @@ package pl.lodz.nbd;
 
 import org.junit.jupiter.api.Test;
 import pl.lodz.nbd.manager.ClientManager;
+import pl.lodz.nbd.manager.RoomManager;
 import pl.lodz.nbd.model.Client;
 import pl.lodz.nbd.repository.impl.ClientRepository;
 import pl.lodz.nbd.repository.impl.ClientTypeRepository;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -14,7 +17,25 @@ public class ClientTest {
     private static final ClientRepository clientRepository = new ClientRepository();
     private static final ClientTypeRepository clientTypeRepository = new ClientTypeRepository();
 
+    @Test
+    void positiveRegisterClientTest() {
+        ClientManager clientManager = new ClientManager(clientRepository, clientTypeRepository);
 
+        assertNotNull(clientManager.registerClient("Aleksander",
+                "Wichrzyński","12345", "Warszawa", "Smutna", 7));
+
+    }
+
+    @Test
+    void getAllClientsTest() {
+        ClientManager clientManager = new ClientManager(clientRepository, clientTypeRepository);
+
+        List<Client> clients = clientManager.getAllClients();
+        assertNotNull(clients);
+        assertTrue(clients.size() > 0);
+        System.out.println(clients);
+
+    }
 //    @Test
 //    void registerAndUpdateClientTest() {
 //        ClientManager clientManager = new ClientManager(clientRepository, clientTypeRepository);

@@ -1,10 +1,34 @@
 package pl.lodz.nbd.repository.impl;
 
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
 import pl.lodz.nbd.model.Client;
+import pl.lodz.nbd.model.Room;
 import pl.lodz.nbd.repository.Repository;
+import pl.lodz.nbd.repository.AbstractMongoRepository;
 
-public class ClientRepository implements Repository<Client> {
-//    @Override
+import java.util.ArrayList;
+import java.util.List;
+
+public class ClientRepository extends AbstractMongoRepository implements Repository<Client> {
+
+    private final MongoClient mongoClient = MongoClients.create(clientSettings);
+    private final MongoDatabase mongoDatabase = mongoClient.getDatabase("nbd");
+
+    public Client add(Client client) {
+        MongoCollection<Client> clientCollection = mongoDatabase.getCollection("clients", Client.class);
+        clientCollection.insertOne(client);
+        return client;
+    }
+
+    public List<Client> getAll() {
+        MongoCollection<Client> clientCollection = mongoDatabase.getCollection("clients", Client.class);
+        return clientCollection.find().into(new ArrayList<Client>());
+    }
+    //    @Override
 //    public Client add(Client client) {
 //        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
 //            em.getTransaction().begin();
