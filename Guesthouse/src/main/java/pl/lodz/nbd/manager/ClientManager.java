@@ -23,6 +23,7 @@ public class ClientManager {
         ClientType defaultClientType = new Default();//clientTypeRepository.getByType(Default.class);
         Client client = new Client(firstName, lastName, personalId, address, defaultClientType);
 
+        System.out.println(client.getUuid());
         return clientRepository.add(client);
     }
 

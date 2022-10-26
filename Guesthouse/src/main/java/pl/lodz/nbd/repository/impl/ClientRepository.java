@@ -15,8 +15,6 @@ import java.util.List;
 
 public class ClientRepository extends AbstractMongoRepository implements Repository<Client> {
 
-    private final MongoClient mongoClient = MongoClients.create(clientSettings);
-    private final MongoDatabase mongoDatabase = mongoClient.getDatabase("nbd");
 
     public Client add(Client client) {
         MongoCollection<Client> clientCollection = mongoDatabase.getCollection("clients", Client.class);

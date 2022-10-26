@@ -4,6 +4,7 @@ import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoCredential;
 import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 import org.bson.UuidRepresentation;
 import org.bson.codecs.configuration.CodecRegistries;
@@ -25,7 +26,8 @@ public abstract class AbstractMongoRepository {
                     .conventions(List.of(Conventions.ANNOTATION_CONVENTION))
                     .build());
 
-    CodecRegistry codecRegistry = fromRegistries(MongoClientSettings.getDefaultCodecRegistry(),
+    CodecRegistry codecRegistry = fromRegistries(
+            MongoClientSettings.getDefaultCodecRegistry(),
             pojoCodecRegistry);
 
     protected MongoClientSettings clientSettings = MongoClientSettings.builder()
@@ -35,6 +37,6 @@ public abstract class AbstractMongoRepository {
             .codecRegistry(codecRegistry)
             .build();
 
-    private MongoClient mongoClient;
-    private MongoDatabase guesthouseDB;
+    protected final MongoClient mongoClient = MongoClients.create(clientSettings);
+    protected final MongoDatabase mongoDatabase = mongoClient.getDatabase("guesthouse");
 }

@@ -1,25 +1,21 @@
 package pl.lodz.nbd.repository.impl;
 
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoDatabase;
-import org.bson.Document;
+
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.result.InsertOneResult;
+import pl.lodz.nbd.model.Client;
 import pl.lodz.nbd.model.Room;
 import pl.lodz.nbd.repository.AbstractMongoRepository;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class RoomRepository extends AbstractMongoRepository {
 
-    private final MongoClient mongoClient = MongoClients.create(clientSettings);
-    private final MongoDatabase mongoDatabase = mongoClient.getDatabase("nbd");
-
-
-    public Room add(Room room) {
-        Document document = new Document("id", room.getUuid())
-                .append("price", room.getPrice())
-                .append("size", room.getSize())
-                .append("number", room.getRoomNumber());
-        System.out.println(mongoDatabase.getCollection("rooms").insertOne(document));
-        return room;
+    public boolean add(Room room) {
+        MongoCollection<Room> roomCollection = mongoDatabase.getCollection("rooms", Room.class);
+        InsertOneResult result = roomCollection.insertOne(room);
+        return result.wasAcknowledged();
     }
 //
 //    @Override
@@ -53,12 +49,11 @@ public class RoomRepository extends AbstractMongoRepository {
 //        }
 //    }
 //
-//    @Override
-//    public List<Room> getAll() {
-//        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
-//            return em.createNamedQuery("Room.getAll", Room.class).getResultList();
-//        }
-//    }
+
+    public List<Room> getAll() {
+        MongoCollection<Room> roomCollection = mongoDatabase.getCollection("rooms", Room.class);
+        return roomCollection.find().into(new ArrayList<>());
+    }
 //
 //    public Room getByRoomNumber(int roomNumber) {
 //        try (EntityManager em = EntityManagerCreator.getEntityManager()) {

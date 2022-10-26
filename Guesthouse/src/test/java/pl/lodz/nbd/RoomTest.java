@@ -1,12 +1,15 @@
 package pl.lodz.nbd;
 
 import org.junit.jupiter.api.Test;
+import pl.lodz.nbd.manager.ClientManager;
 import pl.lodz.nbd.manager.RoomManager;
+import pl.lodz.nbd.model.Client;
 import pl.lodz.nbd.model.Room;
 import pl.lodz.nbd.repository.impl.RoomRepository;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RoomTest {
 
@@ -14,11 +17,22 @@ public class RoomTest {
 
 
     @Test
+    void getAllRoomsTest() {
+        RoomManager roomManager = new RoomManager(roomRepository);
+
+        List<Room> rooms = roomManager.getAllRooms();
+        assertNotNull(rooms);
+        assertTrue(rooms.size() > 0);
+        System.out.println(rooms);
+
+    }
+
+    @Test
     void addRoomTest() {
         RoomManager roomManager = new RoomManager(roomRepository);
 
         //Check if rooms are persisted
-        assertNotNull(roomManager.addRoom(100.0, 2, 100));
+        assertTrue(roomManager.addRoom(100.0, 2, 100));
         //assertNotNull(roomManager.addRoom(200.0, 3, 101));
 
         //Check if room is not persisted(existing room number)
