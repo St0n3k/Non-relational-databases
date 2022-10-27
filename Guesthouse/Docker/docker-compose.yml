@@ -1,18 +1,40 @@
 version: "3.8"
+
 services:
-  mongodb:
-    image : mongo
+  mongo:
+    build: .
+    image: mongocustom
     container_name: mongodb
+    ports:
+      - "27017:27017"
     environment:
       - MONGO_INITDB_ROOT_USERNAME=nbd
       - MONGO_INITDB_ROOT_PASSWORD=nbdpassword
-    volumes:
-      - pg:/var/lib/mongodb/data
-    ports:
-      - "27017:27017"
-    restart: unless-stopped
-volumes:
-  pg:
-
+    command: --config /etc/mongod.conf
+    networks:
+      - mongonet
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 10s
+      timeout: 2s
+      retries: 5
+  mongoinit:
+    build: .
+    image: mongocustom
+    container_name: mongoinit
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - mongonet
+    command: >
+      mongo 
+      --host mongodb:27017 
+      --username admin 
+      --pasword
+      --authenticationDatabase 
+      admin --eval 'rs.initiate();'
+networks:
+  mongonet: { }
 
 
