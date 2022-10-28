@@ -8,20 +8,20 @@ import pl.lodz.nbd.model.AbstractEntity;
 
 @Data
 public abstract class ClientType extends AbstractEntity {
-
-    @BsonProperty("name")
-    private String name;
-
     @BsonProperty("discount")
     private double discount;
 
+    @BsonProperty("type_name")
+    private String typeName;
+
+
     public ClientType() {
-        this.name = this.getClass().getSimpleName();
+        this.typeName = this.getClass().getSimpleName();
     }
 
     @BsonCreator
-    public ClientType(@BsonProperty("name") String name, @BsonProperty("discount") double discount) {
-        this.name = name;
+    public ClientType(@BsonProperty("type_name") String name, @BsonProperty("discount") double discount) {
+        this.typeName = name;
         this.discount = discount;
     }
 
