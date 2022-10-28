@@ -5,6 +5,7 @@ services:
     build: .
     image: mongocustom
     container_name: mongodb
+    hostname: mongodb
     ports:
       - "27017:27017"
     environment:
@@ -21,7 +22,8 @@ services:
   mongoinit:
     build: .
     image: mongocustom
-    container_name: mongoinit
+    container_name: mongodbinit
+    hostname: mongodbinit
     depends_on:
       mongo:
         condition: service_healthy
