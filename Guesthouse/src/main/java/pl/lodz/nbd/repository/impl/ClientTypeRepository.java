@@ -1,40 +1,42 @@
 package pl.lodz.nbd.repository.impl;
 
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.result.InsertOneResult;
+import org.bson.conversions.Bson;
 import pl.lodz.nbd.model.ClientTypes.ClientType;
-import pl.lodz.nbd.repository.Repository;
+import pl.lodz.nbd.model.ClientTypes.Gold;
+import pl.lodz.nbd.repository.AbstractMongoRepository;
 
-public class ClientTypeRepository implements Repository<ClientType> {
-//    @Override
-//    public ClientType add(ClientType clientType) {
-//        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
-//            em.getTransaction().begin();
-//            em.persist(clientType);
-//            em.getTransaction().commit();
-//            return clientType;
-//        } catch (Exception e) {
-//            return null;
-//        }
-//    }
-//
-//    @Override
-//    public boolean remove(ClientType clientType) {
-//        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
-//            em.getTransaction().begin();
-//            em.remove(em.merge(clientType));
-//            em.getTransaction().commit();
-//            return true;
-//        } catch (Exception e) {
-//            return false;
-//        }
-//    }
-//
-//    @Override
-//    public ClientType getById(Long id) {
-//        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
-//            return em.find(ClientType.class, id);
-//        }
-//    }
-//
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+public class ClientTypeRepository extends AbstractMongoRepository {
+
+    MongoCollection<ClientType> clientTypeCollection = mongoDatabase.getCollection("client_types", ClientType.class);
+
+    public ClientType add(ClientType clientType) {
+        InsertOneResult insertOneResult = clientTypeCollection.insertOne(clientType);
+        if (insertOneResult.wasAcknowledged()) {
+            return clientType;
+        } else {
+            return null;
+        }
+    }
+
+
+    public void remove(ClientType clientType) {
+        Bson filter = Filters.eq("_id", clientType.getUuid());
+        clientTypeCollection.findOneAndDelete(filter);
+    }
+
+
+    public ClientType getById(UUID id) {
+        Bson filter = Filters.eq("_id", id);
+        return clientTypeCollection.find(filter).first();
+    }
+
 //    @Override
 //    public ClientType update(ClientType clientType) {
 //        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
@@ -46,25 +48,21 @@ public class ClientTypeRepository implements Repository<ClientType> {
 //            return null;
 //        }
 //    }
-//
-//    @Override
-//    public List<ClientType> getAll() {
-//        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
-//            return em.createNamedQuery("ClientType.getAll", ClientType.class).getResultList();
-//        }
-//    }
-//
-//    public ClientType getByType(Class type) {
-//        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
-//            List<ClientType> result = em.createNamedQuery("ClientType.getByType", ClientType.class).setParameter("type", type.getSimpleName()).getResultList();
-//
-//            if (result.isEmpty()) {
-//                return null;
-//            } else {
-//                return result.get(0);
-//            }
-//        } catch (Exception e) {
-//            return null;
-//        }
-//    }
+
+
+    public List<ClientType> getAll() {
+
+        return clientTypeCollection.find().into(new ArrayList<>());
+    }
+
+    public Gold getGoldClientType() {
+        Bson filter = Filters.eq("_clazz", "Gold");
+        MongoCollection<Gold> goldCollection = mongoDatabase.getCollection("client_types", Gold.class);
+        return goldCollection.find(filter).first();
+    }
+
+    public ClientType getByType(Class type) {
+        Bson filter = Filters.eq("_clazz", type.getSimpleName());
+        return clientTypeCollection.find(filter).first();
+    }
 }

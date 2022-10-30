@@ -3,9 +3,10 @@ package pl.lodz.nbd.model.ClientTypes;
 
 import org.bson.codecs.pojo.annotations.BsonDiscriminator;
 
-@BsonDiscriminator(key = "type", value = "Silver")
+@BsonDiscriminator(key = "_clazz", value = "pl.lodz.nbd.model.ClientTypes.Silver")
 public class Silver extends ClientType {
+
     public Silver() {
-        this.setDiscount(0.1);
+        super(0.10);
     }
 }

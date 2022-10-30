@@ -5,9 +5,6 @@ import pl.lodz.nbd.manager.ClientManager;
 import pl.lodz.nbd.manager.RentManager;
 import pl.lodz.nbd.manager.RoomManager;
 import pl.lodz.nbd.model.Client;
-import pl.lodz.nbd.model.ClientTypes.Bronze;
-import pl.lodz.nbd.model.ClientTypes.Gold;
-import pl.lodz.nbd.model.ClientTypes.Silver;
 import pl.lodz.nbd.model.Rent;
 import pl.lodz.nbd.model.Room;
 import pl.lodz.nbd.repository.impl.ClientRepository;
@@ -16,13 +13,9 @@ import pl.lodz.nbd.repository.impl.RentRepository;
 import pl.lodz.nbd.repository.impl.RoomRepository;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class RentTest {
 
@@ -34,7 +27,7 @@ public class RentTest {
     private static final RoomManager roomManager = new RoomManager(roomRepository);
     private static final RentManager rentManager = new RentManager(clientRepository, roomRepository, rentRepository);
 
-//    void initializeData() {
+    //    void initializeData() {
 //        clientManager.registerClient("Jerzy", "Dudek", "999777", "Wisła", "Karpacka", 22);
 //        clientManager.registerClient("Kamil", "Stoch", "999888", "Odra", "Wiślana", 32);
 //        clientManager.registerClient("Remigiusz", "Dudek", "999999", "Wrocław", "Łódzka", 44);
@@ -50,9 +43,18 @@ public class RentTest {
 //        rentManager.rentRoom(LocalDateTime.now().plusDays(1300), LocalDateTime.now().plusDays(1400), true, "999777", 2137);
 //    }
 //
-//    @Test
-//    void rentRoomTest() {
-//
+    @Test
+    void rentRoomTest() {
+        Client client = clientManager.registerClient("Aleksander",
+                "Wichrzyński", "12345", "Warszawa", "Smutna", 7);
+
+        Room room = roomManager.addRoom(100, 20, 30);
+
+        Rent rentThirtyHours = rentManager.rentRoom(LocalDateTime.now().plusDays(4), LocalDateTime.now().plusDays(4).plusHours(30), false, client.getPersonalId(), 30);
+        Rent ren4tThirtyHours = rentManager.rentRoom(LocalDateTime.now().plusDays(4), LocalDateTime.now().plusDays(4).plusHours(30), false, client.getPersonalId(), 30);
+        assertNotNull(rentThirtyHours);
+        assertEquals(rentThirtyHours.getFinalCost(), 100.0 * 2);
+
 //        Client client = clientManager.registerClient("Marek", "Kowalski", "000566", "Warszawa", "Astronautów", 1);
 //        Room room = roomManager.addRoom(100.0, 2, 400);
 //
@@ -74,7 +76,7 @@ public class RentTest {
 //
 //        //Rent create fail, room doesn't exist
 //        assertNull(rentManager.rentRoom(LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(5), true, client.getPersonalId(), 999));
-//    }
+    }
 //
 //
 //    @Test

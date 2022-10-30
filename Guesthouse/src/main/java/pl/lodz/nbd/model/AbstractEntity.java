@@ -1,14 +1,20 @@
 package pl.lodz.nbd.model;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.bson.codecs.pojo.annotations.BsonProperty;
 
-import java.io.Serializable;
 import java.util.UUID;
 
 
 @Data
-public abstract class AbstractEntity implements Serializable {
+@NoArgsConstructor
+public abstract class AbstractEntity {
 
-    private UUID uuid = UUID.randomUUID();
+    @BsonProperty("_id")
+    private UUID uuid;
 
+    public AbstractEntity(UUID uuid) {
+        this.uuid = uuid;
+    }
 }

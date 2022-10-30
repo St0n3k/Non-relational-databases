@@ -2,26 +2,30 @@ package pl.lodz.nbd.model.ClientTypes;
 
 import lombok.Data;
 import org.bson.codecs.pojo.annotations.BsonCreator;
+import org.bson.codecs.pojo.annotations.BsonDiscriminator;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import pl.lodz.nbd.model.AbstractEntity;
 
+import java.util.UUID;
+
 
 @Data
+@BsonDiscriminator(key = "_clazz", value = "pl.lodz.nbd.model.ClientTypes.ClientType")
 public abstract class ClientType extends AbstractEntity {
     @BsonProperty("discount")
     private double discount;
 
-    @BsonProperty("type_name")
-    private String typeName;
 
-
-    public ClientType() {
-        this.typeName = this.getClass().getSimpleName();
+    public ClientType(double discount) {
+        super(UUID.randomUUID());
+        this.discount = discount;
     }
 
+
     @BsonCreator
-    public ClientType(@BsonProperty("type_name") String name, @BsonProperty("discount") double discount) {
-        this.typeName = name;
+    public ClientType(@BsonProperty("_id") UUID id,
+                      @BsonProperty("discount") double discount) {
+        super(id);
         this.discount = discount;
     }
 

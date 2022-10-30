@@ -18,7 +18,6 @@ public class ClientManager {
 
     public Client registerClient(String firstName, String lastName, String personalId, String city, String street, int number) {
 
-        //Values are validated in constructors
         Address address = new Address(city, street, number);
         ClientType defaultClientType = new Default();//clientTypeRepository.getByType(Default.class);
         Client client = new Client(firstName, lastName, personalId, address, defaultClientType);
@@ -27,22 +26,22 @@ public class ClientManager {
         return clientRepository.add(client);
     }
 
-    public List<Client> getAllClients(){
+    public List<Client> getAllClients() {
         return clientRepository.getAll();
     }
-//
-//    public Client getByPersonalId(String personalId) {
-//        return clientRepository.getClientByPersonalId(personalId);
-//    }
-//
-//    public boolean removeClient(Client client) {
-//        return clientRepository.remove(client);
-//    }
-//
+
+    public Client getByPersonalId(String personalId) {
+        return clientRepository.getClientByPersonalId(personalId);
+    }
+
+    public void removeClient(Client client) {
+        clientRepository.remove(client);
+    }
+
 //    public Client updateClient(Client client) {
 //        return clientRepository.update(client);
 //    }
-//
+
 //    public Client changeTypeTo(Class type, Client client) {
 //        client.setClientType(clientTypeRepository.getByType(type));
 //

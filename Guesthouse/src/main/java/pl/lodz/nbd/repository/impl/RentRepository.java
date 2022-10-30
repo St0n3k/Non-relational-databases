@@ -1,13 +1,30 @@
 package pl.lodz.nbd.repository.impl;
 
+import com.mongodb.client.ClientSession;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Filters;
+import org.bson.conversions.Bson;
 import pl.lodz.nbd.model.Rent;
-import pl.lodz.nbd.repository.Repository;
+import pl.lodz.nbd.repository.AbstractMongoRepository;
 
-public class RentRepository implements Repository<Rent> {
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+public class RentRepository extends AbstractMongoRepository {
+
+    MongoCollection<Rent> rentCollection = mongoDatabase.getCollection("rents", Rent.class);
+
+    public Rent add(Rent rent) {
+        try (ClientSession clientSession = mongoClient.startSession()) {
+            clientSession.startTransaction();
+            //TODO add transaciton logic
+            rentCollection.insertOne(rent);
+            clientSession.commitTransaction();
+            return rent;
+        }
 
 
-//    @Override
-//    public Rent add(Rent rent) {
 //        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
 //            em.getTransaction().begin();
 //
@@ -35,45 +52,32 @@ public class RentRepository implements Repository<Rent> {
 //        } catch (Exception e) {
 //            return null;
 //        }
-//    }
-//
-//    @Override
-//    public boolean remove(Rent rent) {
-//        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
-//            em.getTransaction().begin();
-//            em.remove(em.merge(rent));
-//            em.getTransaction().commit();
-//            return true;
-//        } catch (Exception e) {
-//            return false;
-//        }
-//    }
-//
-//    @Override
-//    public Rent getById(Long id) {
-//        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
-//            return em.find(Rent.class, id);
-//        }
-//    }
-//
-//    @Override
-//    public List<Rent> getAll() {
-//        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
-//            return em.createNamedQuery("Rent.getAll", Rent.class).getResultList();
-//        }
-//    }
-//
-//    public List<Rent> getByRoomNumber(int roomNumber) {
-//        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
-//            return em.createNamedQuery("Rent.getByRoomNumber", Rent.class).setParameter("roomNumber", roomNumber).getResultList();
-//        }
-//    }
-//
-//    public List<Rent> getByClientPersonalId(String personalId) {
-//        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
-//            return em.createNamedQuery("Rent.getByClientPersonalId", Rent.class).setParameter("personalId", personalId).getResultList();
-//        }
-//    }
+    }
+
+    public void remove(Rent rent) {
+        Bson filter = Filters.eq("_id", rent.getUuid());
+        rentCollection.findOneAndDelete(filter);
+    }
+
+
+    public Rent getById(UUID id) {
+        Bson filter = Filters.eq("_id", id);
+        return rentCollection.find(filter).first();
+    }
+
+    public List<Rent> getAll() {
+        return rentCollection.find().into(new ArrayList<>());
+    }
+
+    public List<Rent> getByRoomNumber(int roomNumber) {
+        Bson filter = Filters.eq("room.number", roomNumber);
+        return rentCollection.find(filter).into(new ArrayList<>());
+    }
+
+    public List<Rent> getByClientPersonalId(String personalId) {
+        Bson filter = Filters.eq("client.personal_id", personalId);
+        return rentCollection.find(filter).into(new ArrayList<>());
+    }
 //
 //    public Rent update(Rent rent) {
 //        try (EntityManager em = EntityManagerCreator.getEntityManager()) {

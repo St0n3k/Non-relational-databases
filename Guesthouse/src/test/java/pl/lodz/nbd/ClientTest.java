@@ -2,14 +2,18 @@ package pl.lodz.nbd;
 
 import org.junit.jupiter.api.Test;
 import pl.lodz.nbd.manager.ClientManager;
-import pl.lodz.nbd.manager.RoomManager;
 import pl.lodz.nbd.model.Client;
+import pl.lodz.nbd.model.ClientTypes.Bronze;
+import pl.lodz.nbd.model.ClientTypes.Default;
+import pl.lodz.nbd.model.ClientTypes.Gold;
+import pl.lodz.nbd.model.ClientTypes.Silver;
 import pl.lodz.nbd.repository.impl.ClientRepository;
 import pl.lodz.nbd.repository.impl.ClientTypeRepository;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 public class ClientTest {
@@ -22,7 +26,7 @@ public class ClientTest {
         ClientManager clientManager = new ClientManager(clientRepository, clientTypeRepository);
 
         assertNotNull(clientManager.registerClient("Aleksander",
-                "Wichrzyński","12345", "Warszawa", "Smutna", 7));
+                "Wichrzyński", "12345", "Warszawa", "Smutna", 7));
 
     }
 
@@ -34,8 +38,23 @@ public class ClientTest {
         assertNotNull(clients);
         assertTrue(clients.size() > 0);
         System.out.println(clients);
+        clients.forEach((client -> System.out.println(client.getClientType().getClass())));
 
     }
+
+    @Test
+    void addClientTypes() {
+        clientTypeRepository.add(new Default());
+        clientTypeRepository.add(new Bronze());
+        clientTypeRepository.add(new Silver());
+        clientTypeRepository.add(new Gold());
+    }
+
+    @Test
+    void clientTypeTest() {
+        System.out.println(clientTypeRepository.getGoldClientType().getClass());
+    }
+
 //    @Test
 //    void registerAndUpdateClientTest() {
 //        ClientManager clientManager = new ClientManager(clientRepository, clientTypeRepository);
