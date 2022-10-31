@@ -49,8 +49,8 @@ public class RentTest {
 
     @Test
     void rentRoomTest() {
-
-        Client client = clientManager.registerClient("Marek", "Kowalski", "000566", "Warszawa", "Astronautów", 1);
+        clientManager.registerClient("Marek", "Kowalski", "000566", "Warszawa", "Astronautów", 1);
+        Client client = clientManager.getByPersonalId("000566");
         Room room = roomManager.addRoom(100.0, 2, 400);
 
         //Rent create success, check if it is persisted and total cost is calculated properly(add 50 to costPerDay, because of board option)
@@ -77,7 +77,7 @@ public class RentTest {
     @Test
     void optimisticLockTestSameDay() throws BrokenBarrierException, InterruptedException {
 
-        Client client = clientManager.registerClient("Marek", "Kowalski", "055566", "Warszawa", "Astronautów", 1);
+        clientManager.registerClient("Marek", "Kowalski", "055566", "Warszawa", "Astronautów", 1);
         Room room = roomManager.addRoom(100.0, 2, 405);
 
         int threadNumber = 10;
@@ -92,7 +92,7 @@ public class RentTest {
                 } catch (InterruptedException | BrokenBarrierException e) {
                     throw new RuntimeException(e);
                 }
-                rentManager.rentRoom(LocalDateTime.now().plusDays(40), LocalDateTime.now().plusDays(41), false, client.getPersonalId(), room.getRoomNumber());
+                rentManager.rentRoom(LocalDateTime.now().plusDays(40), LocalDateTime.now().plusDays(41), false, "055566", room.getRoomNumber());
                 numberFinished.getAndIncrement();
             }));
         }

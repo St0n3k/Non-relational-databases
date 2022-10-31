@@ -16,7 +16,7 @@ public class ClientManager {
     private ClientRepository clientRepository;
     private ClientTypeRepository clientTypeRepository;
 
-    public Client registerClient(String firstName, String lastName, String personalId, String city, String street, int number) {
+    public boolean registerClient(String firstName, String lastName, String personalId, String city, String street, int number) {
 
         Address address = new Address(city, street, number);
         ClientType defaultClientType = new Default();//clientTypeRepository.getByType(Default.class);
@@ -38,14 +38,7 @@ public class ClientManager {
         clientRepository.remove(client);
     }
 
-//    public Client updateClient(Client client) {
-//        return clientRepository.update(client);
-//    }
-
-//    public Client changeTypeTo(Class type, Client client) {
-//        client.setClientType(clientTypeRepository.getByType(type));
-//
-//        client = updateClient(client);
-//        return client;
-//    }
+    public boolean updateClient(Client client) {
+        return clientRepository.update(client);
+    }
 }
