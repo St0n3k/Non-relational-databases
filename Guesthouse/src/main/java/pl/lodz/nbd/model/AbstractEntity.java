@@ -14,6 +14,7 @@ public abstract class AbstractEntity {
     @BsonProperty("_id")
     private UUID uuid;
 
+
     public AbstractEntity(UUID uuid) {
         this.uuid = uuid;
     }

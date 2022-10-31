@@ -51,6 +51,15 @@ public class ClientTest {
     }
 
     @Test
+    void getClientTypes() {
+        assertTrue(clientTypeRepository.getByType(Default.class) instanceof Default);
+        assertTrue(clientTypeRepository.getByType(Bronze.class) instanceof Bronze);
+        assertTrue(clientTypeRepository.getByType(Silver.class) instanceof Silver);
+        assertTrue(clientTypeRepository.getByType(Gold.class) instanceof Gold);
+    }
+
+
+    @Test
     void clientTypeTest() {
         System.out.println(clientTypeRepository.getGoldClientType().getClass());
     }

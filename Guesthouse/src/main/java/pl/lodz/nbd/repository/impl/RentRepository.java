@@ -5,8 +5,10 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import org.bson.conversions.Bson;
 import pl.lodz.nbd.model.Rent;
+import pl.lodz.nbd.model.Room;
 import pl.lodz.nbd.repository.AbstractMongoRepository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -18,7 +20,19 @@ public class RentRepository extends AbstractMongoRepository {
     public Rent add(Rent rent) {
         try (ClientSession clientSession = mongoClient.startSession()) {
             clientSession.startTransaction();
-            //TODO add transaciton logic
+
+            Room room = rent.getRoom();
+
+            boolean isColliding = isColliding(
+                    rent.getBeginTime(),
+                    rent.getEndTime(),
+                    room.getRoomNumber());
+
+            if (isColliding) {
+                clientSession.abortTransaction();
+                return null;
+            }
+
             rentCollection.insertOne(rent);
             clientSession.commitTransaction();
             return rent;
@@ -78,7 +92,8 @@ public class RentRepository extends AbstractMongoRepository {
         Bson filter = Filters.eq("client.personal_id", personalId);
         return rentCollection.find(filter).into(new ArrayList<>());
     }
-//
+
+    //
 //    public Rent update(Rent rent) {
 //        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
 //            em.getTransaction().begin();
@@ -90,20 +105,29 @@ public class RentRepository extends AbstractMongoRepository {
 //        }
 //    }
 //
-//    public boolean isColliding(LocalDateTime beginDate, LocalDateTime endDate, int roomNumber) {
-//        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
-//            List<Rent> rentsColliding =
-//                    em.createNamedQuery("Rent.getRentsColliding", Rent.class)
-//                            .setParameter("beginDate", beginDate)
-//                            .setParameter("endDate", endDate)
-//                            .setParameter("roomNumber", roomNumber)
-//                            .getResultList();
-//
-//            return !rentsColliding.isEmpty();
-//        } catch (Exception e) {
-//            System.out.println("Unexpected exc");
-//            return true;
-//        }
-//    }
+    public boolean isColliding(LocalDateTime beginDate, LocalDateTime endDate, int roomNumber) {
 
+        Bson filterRoomNumber = Filters.eq("room.number", roomNumber);
+
+        Bson filterBeginDateBetweenExistingLeft = Filters.gte("begin_time", beginDate);
+        Bson filterBeginDateBetweenExistingRight = Filters.lte("begin_time", endDate);
+
+        Bson filterEndDateBetweenExistingRight = Filters.gte("end_time", beginDate);
+        Bson filterEndDateBetweenExistingLeft = Filters.lte("end_time", endDate);
+
+        Bson filterDateContainingExistingLeft = Filters.lte("begin_time", beginDate);
+        Bson filterDateContainingExistingRight = Filters.gte("end_time", endDate);
+
+        Bson dateFilter1 = Filters.and(filterBeginDateBetweenExistingLeft, filterBeginDateBetweenExistingRight);
+        Bson dateFilter2 = Filters.and(filterEndDateBetweenExistingLeft, filterEndDateBetweenExistingRight);
+        Bson dateFilter3 = Filters.and(filterDateContainingExistingLeft, filterDateContainingExistingRight);
+
+        Bson dateFilters = Filters.or(dateFilter1, dateFilter2, dateFilter3);
+
+        Bson finalFilter = Filters.and(filterRoomNumber, dateFilters);
+
+        List<Rent> rentsColliding = rentCollection.find(finalFilter).into(new ArrayList<>());
+
+        return !rentsColliding.isEmpty();
+    }
 }

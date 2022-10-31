@@ -56,13 +56,13 @@ public class ClientTypeRepository extends AbstractMongoRepository {
     }
 
     public Gold getGoldClientType() {
-        Bson filter = Filters.eq("_clazz", "Gold");
+        Bson filter = Filters.eq("_clazz", "pl.lodz.nbd.model.ClientTypes.Gold");
         MongoCollection<Gold> goldCollection = mongoDatabase.getCollection("client_types", Gold.class);
         return goldCollection.find(filter).first();
     }
 
     public ClientType getByType(Class type) {
-        Bson filter = Filters.eq("_clazz", type.getSimpleName());
+        Bson filter = Filters.eq("_clazz", type.getName());
         return clientTypeCollection.find(filter).first();
     }
 }
