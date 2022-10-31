@@ -16,6 +16,7 @@ import pl.lodz.nbd.repository.impl.ClientRepository;
 import pl.lodz.nbd.repository.impl.ClientTypeRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -28,23 +29,22 @@ public class ClientTest {
     @Test
     void positiveRegisterClientTest() {
         assertTrue(clientManager.registerClient("Aleksander",
-                "Wicher", "123456", "Warszawa", "Smutna", 7));
+                "Wicher", "123456", "Warszawa", "Smutna", 7).isPresent());
 
     }
 
     @Test
     void negativeRegisterClientTest() {
         assertTrue(clientManager.registerClient("Aleksander",
-                "Wichrzyński", "12345", "Warszawa", "Smutna", 7));
+                "Wichrzyński", "12345", "Warszawa", "Smutna", 7).isPresent());
         assertThrows(MongoWriteException.class, () -> clientManager.registerClient("Aleksander",
                 "Wichrzyński", "12345", "Warszawa", "Smutna", 7));
-
     }
 
     @Test
     void getAllClientsTest() {
         assertTrue(clientManager.registerClient("Jurek",
-                "Jurkowski", "123321", "Warszawa", "Smutna", 7));
+                "Jurkowski", "123321", "Warszawa", "Smutna", 7).isPresent());
         List<Client> clients = clientManager.getAllClients();
         assertNotNull(clients);
         assertTrue(clients.size() > 0);
@@ -57,21 +57,14 @@ public class ClientTest {
         Default def = new Default();
         Client client = new Client("Artur", "Boruc", "124421", address, def);
         clientRepository.add(client);
-        Client client2 = clientManager.getByPersonalId(client.getPersonalId());
-        assertEquals(client, client2);
+        Optional<Client> client2 = clientManager.getByPersonalId(client.getPersonalId());
+        assertTrue(client2.isPresent());
+        assertEquals(client, client2.get());
 
         Client same = new Client("Artur", "Boruc", "124421", address, def);
 
         assertNotEquals(client, same);
-        assertNotEquals(client2, same);
-    }
-
-    @Test
-    void addClientTypes() {
-        assertNotNull(clientTypeRepository.add(new Default()));
-        assertNotNull(clientTypeRepository.add(new Bronze()));
-        assertNotNull(clientTypeRepository.add(new Silver()));
-        assertNotNull(clientTypeRepository.add(new Gold()));
+        assertNotEquals(client2.get(), same);
     }
 
     @Test
@@ -84,8 +77,9 @@ public class ClientTest {
 
     @Test
     void updateClientTest() {
-        clientManager.registerClient("Jan", "Matejko", "000211", "Łódź", "Wesoła", 32);
-        Client client = clientManager.getByPersonalId("000211");
+        Optional<Client> optClient = clientManager.registerClient("Jan", "Matejko", "000211", "Łódź", "Wesoła", 32);
+        assertTrue(optClient.isPresent());
+        Client client = optClient.get();
         assertEquals(client.getFirstName(), "Jan");
 
         client.setFirstName("Marcin");
@@ -94,7 +88,9 @@ public class ClientTest {
         client.setClientType(new Silver());
         assertTrue(clientManager.updateClient(client));
 
-        Client client2 = clientManager.getByPersonalId(client.getPersonalId());
+        Optional<Client> optClient2 = clientManager.getByPersonalId(client.getPersonalId());
+        assertTrue(optClient2.isPresent());
+        Client client2 = optClient2.get();
         assertEquals(client2.getFirstName(), "Marcin");
         assertEquals(client2.getAddress().getCity(), "Ozorków");
         assertEquals(client2.getClientType().getDiscount(), new Silver().getDiscount());
@@ -102,13 +98,18 @@ public class ClientTest {
 
     @Test
     void removeClientTest() {
-        clientManager.registerClient("Janek", "Testowy", "112211", "Łódź", "Wesoła", 32);
-        Client client = clientManager.getByPersonalId("112211");
-        assertNotNull(client);
-        clientManager.removeClient(client);
+        assertTrue(clientManager.registerClient("Janek", "Testowy", "112211", "Łódź", "Wesoła", 32).isPresent());
+        Optional<Client> client = clientManager.getByPersonalId("112211");
+        assertTrue(client.isPresent());
+        clientManager.removeClient(client.get());
         client = clientManager.getByPersonalId("112211");
-        assertNull(client);
+        assertTrue(client.isEmpty());
     }
 
+    @Test
+    void negativeGetClientByPersonalIdTest(){
+        Optional<Client> client = clientManager.getByPersonalId("abcdef");
+        assertTrue(client.isEmpty());
+    }
 
 }

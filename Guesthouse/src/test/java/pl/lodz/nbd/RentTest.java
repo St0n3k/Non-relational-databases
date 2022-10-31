@@ -15,6 +15,7 @@ import pl.lodz.nbd.repository.impl.RoomRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -49,8 +50,8 @@ public class RentTest {
 
     @Test
     void rentRoomTest() {
-        clientManager.registerClient("Marek", "Kowalski", "000566", "Warszawa", "Astronautów", 1);
-        Client client = clientManager.getByPersonalId("000566");
+        Optional<Client> optClient = clientManager.registerClient("Marek", "Kowalski", "000566", "Warszawa", "Astronautów", 1);
+        Client client = optClient.get();
         Room room = roomManager.addRoom(100.0, 2, 400);
 
         //Rent create success, check if it is persisted and total cost is calculated properly(add 50 to costPerDay, because of board option)

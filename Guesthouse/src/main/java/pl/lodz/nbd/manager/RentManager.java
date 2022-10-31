@@ -12,6 +12,7 @@ import pl.lodz.nbd.repository.impl.RoomRepository;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -42,13 +43,13 @@ public class RentManager {
         //Guard clause
         if (beginTime.isAfter(endTime)) return null;
 
-        Client client = clientRepository.getClientByPersonalId(clientPersonalId);
+        Optional<Client> client = clientRepository.getClientByPersonalId(clientPersonalId);
         Room room = roomRepository.getByRoomNumber(roomNumber);
 
-        if (client == null || room == null) return null;
+        if (client.isEmpty() || room == null) return null;
 
-        double finalCost = calculateTotalCost(beginTime, endTime, room.getPrice(), board, client.getClientType());
-        Rent rent = new Rent(beginTime, endTime, board, finalCost, client, room);
+        double finalCost = calculateTotalCost(beginTime, endTime, room.getPrice(), board, client.get().getClientType());
+        Rent rent = new Rent(beginTime, endTime, board, finalCost, client.get(), room);
 
         return rentRepository.add(rent);
     }
