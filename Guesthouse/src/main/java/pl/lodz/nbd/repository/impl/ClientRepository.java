@@ -3,20 +3,17 @@ package pl.lodz.nbd.repository.impl;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.IndexOptions;
-import com.mongodb.client.model.Indexes;
 import com.mongodb.client.model.Updates;
-import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import pl.lodz.nbd.model.Client;
 import pl.lodz.nbd.repository.AbstractMongoRepository;
-import pl.lodz.nbd.repository.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class ClientRepository extends AbstractMongoRepository implements Repository<Client> {
+public class ClientRepository extends AbstractMongoRepository {
     public ClientRepository() {
         Document index = new Document("personal_id", 1);
         IndexOptions options = new IndexOptions().unique(true);

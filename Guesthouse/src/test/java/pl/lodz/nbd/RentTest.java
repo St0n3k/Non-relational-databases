@@ -15,11 +15,13 @@ import pl.lodz.nbd.repository.impl.RoomRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class RentTest {
 
@@ -51,34 +53,44 @@ public class RentTest {
     void rentRoomTest() {
         clientManager.registerClient("Marek", "Kowalski", "000566", "Warszawa", "Astronautów", 1);
         Client client = clientManager.getByPersonalId("000566");
-        Room room = roomManager.addRoom(100.0, 2, 400);
+        roomManager.addRoom(100.0, 2, 400);
+        Optional<Room> optionalRoom = roomManager.getByRoomNumber(400);
+        assertTrue(optionalRoom.isPresent());
+        Room room = optionalRoom.get();
 
         //Rent create success, check if it is persisted and total cost is calculated properly(add 50 to costPerDay, because of board option)
-        Rent rentThreeDays = rentManager.rentRoom(LocalDateTime.now(), LocalDateTime.now().plusDays(3), true, client.getPersonalId(), room.getRoomNumber());
-        assertNotNull(rentThreeDays);
+        Optional<Rent> optionalRent = rentManager.rentRoom(LocalDateTime.now(), LocalDateTime.now().plusDays(3), true, client.getPersonalId(), room.getRoomNumber());
+        assertTrue(optionalRent.isPresent());
+        Rent rentThreeDays = optionalRent.get();
         assertEquals(rentThreeDays.getFinalCost(), (100.0 + 50.0) * 3);
 
         //Rent create success, check if it persisted and days are rounded up(no board option)
-        Rent rentThirtyHours = rentManager.rentRoom(LocalDateTime.now().plusDays(4), LocalDateTime.now().plusDays(4).plusHours(30), false, client.getPersonalId(), room.getRoomNumber());
-        assertNotNull(rentThirtyHours);
-        assertEquals(rentThirtyHours.getFinalCost(), 100.0 * 2);
+        optionalRent = rentManager.rentRoom(LocalDateTime.now().plusDays(4), LocalDateTime.now().plusDays(4).plusHours(30), false, client.getPersonalId(), room.getRoomNumber());
+        assertTrue(optionalRent.isPresent());
+        assertEquals(optionalRent.get().getFinalCost(), 100.0 * 2);
 
         //Rent create fail, dates are colliding with other rent of the room
-        assertNull(rentManager.rentRoom(LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(5), true, client.getPersonalId(), room.getRoomNumber()));
+        optionalRent = rentManager.rentRoom(LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(5), true, client.getPersonalId(), room.getRoomNumber());
+        assertTrue(optionalRent.isEmpty());
 
         //Rent create fail, client doesn't exist
-        assertNull(rentManager.rentRoom(LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(5), true, "111111", room.getRoomNumber()));
+        optionalRent = rentManager.rentRoom(LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(5), true, "111111", room.getRoomNumber());
+        assertTrue(optionalRent.isEmpty());
 
         //Rent create fail, room doesn't exist
-        assertNull(rentManager.rentRoom(LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(5), true, client.getPersonalId(), 999));
+        optionalRent = rentManager.rentRoom(LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(5), true, client.getPersonalId(), 999);
+        assertTrue(optionalRent.isEmpty());
     }
 
 
     @Test
     void optimisticLockTestSameDay() throws BrokenBarrierException, InterruptedException {
 
-        clientManager.registerClient("Marek", "Kowalski", "055566", "Warszawa", "Astronautów", 1);
-        Room room = roomManager.addRoom(100.0, 2, 405);
+        clientManager.registerClient("Marek", "Kowalski", "065566", "Warszawa", "Astronautów", 1);
+        roomManager.addRoom(100.0, 2, 405);
+        Optional<Room> optionalRoom = roomManager.getByRoomNumber(405);
+        assertTrue(optionalRoom.isPresent());
+        Room room = optionalRoom.get();
 
         int threadNumber = 10;
         CyclicBarrier cyclicBarrier = new CyclicBarrier(threadNumber + 1);
@@ -103,7 +115,8 @@ public class RentTest {
         }
         assertEquals(rentManager.getAllRentsOfRoom(room.getRoomNumber()).size(), 1);
     }
-//
+
+    //
 //    @Test
 //    void optimisticLockTestOverlap() throws BrokenBarrierException, InterruptedException {
 //
@@ -158,44 +171,30 @@ public class RentTest {
 //        assertEquals(silverRent.getFinalCost(), 100 - (0.10 * 100));
 //        assertEquals(goldRent.getFinalCost(), 100 - (0.15 * 100));
 //    }
-//
-//    @Test
-//    void cascadeDeleteTest() {
-//        initializeData();
-//
-//        List<Rent> rents = rentManager.getAllRentsOfRoom(999);
-//        assertEquals(2, rents.size());
-//        assertTrue(roomManager.removeRoom(roomManager.getByRoomNumber(999)));
-//        rents = rentManager.getAllRentsOfRoom(999);
-//        assertEquals(0, rents.size());
-//
-//        rents = rentManager.getAllRentsOfClient("999888");
-//        assertEquals(2, rents.size());
-//        assertTrue(clientManager.removeClient(clientManager.getByPersonalId("999888")));
-//        rents = rentManager.getAllRentsOfClient("999888");
-//        assertEquals(0, rents.size());
-//
-//        List<Rent> rentsToBeRemoved = rentManager.getAllRentsOfRoom(2137);
-//        assertEquals(1, rentsToBeRemoved.size());
-//
-//        rentManager.removeRent(rentsToBeRemoved.get(0));
-//
-//        rentsToBeRemoved = rentManager.getAllRentsOfRoom(2137);
-//        assertEquals(0, rentsToBeRemoved.size());
-//    }
-//
-//    @Test
-//    void updateRentBoardTest() {
-//        Client client = clientManager.registerClient("Marek", "Kowalski", "140566", "Warszawa", "Astronautów", 1);
-//        Room room = roomManager.addRoom(100.0, 2, 1400);
-//
-//        Rent rent = rentManager.rentRoom(LocalDateTime.now().plusDays(300), LocalDateTime.now().plusDays(320), false, client.getPersonalId(), room.getRoomNumber());
-//        assertEquals(20 * 100, rent.getFinalCost());
-//        rentManager.updateRentBoard(rent.getId(), true);
-//
-//        rent = rentManager.getRentById(rent.getId());
-//
-//        //Plus 50 per day, because of board option
-//        assertEquals(20 * (100 + 50), rent.getFinalCost());
-//    }
+
+    @Test
+    void updateRentTest() {
+        clientManager.registerClient("Marek", "Kowalski", "140566", "Warszawa", "Astronautów", 1);
+        roomManager.addRoom(100.0, 2, 1400);
+
+        Client client = clientManager.getByPersonalId("140566");
+        Optional<Room> optionalRoom = roomManager.getByRoomNumber(1400);
+        assertTrue(optionalRoom.isPresent());
+        Room room = optionalRoom.get();
+
+        Optional<Rent> optionalRent = rentManager.rentRoom(LocalDateTime.now().plusDays(300), LocalDateTime.now().plusDays(320), false, client.getPersonalId(), room.getRoomNumber());
+        assertTrue(optionalRent.isPresent());
+
+        Rent rent = optionalRent.get();
+        assertEquals(20 * 100, rent.getFinalCost());
+
+        rent.setBoard(true);
+
+        rentManager.update(rent);
+
+        rent = rentManager.getRentById(rent.getUuid());
+
+        //Plus 50 per day, because of board option
+        assertEquals(20 * (100 + 50), rent.getFinalCost());
+    }
 }

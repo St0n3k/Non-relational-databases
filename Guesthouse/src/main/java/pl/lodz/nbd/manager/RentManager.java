@@ -12,6 +12,7 @@ import pl.lodz.nbd.repository.impl.RoomRepository;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -37,37 +38,35 @@ public class RentManager {
         rentRepository.remove(rent);
     }
 
-    public Rent rentRoom(LocalDateTime beginTime, LocalDateTime endTime, boolean board, String clientPersonalId, int roomNumber) {
+    public Optional<Rent> rentRoom(LocalDateTime beginTime, LocalDateTime endTime, boolean board, String clientPersonalId, int roomNumber) {
 
         //Guard clause
-        if (beginTime.isAfter(endTime)) return null;
+        if (beginTime.isAfter(endTime)) return Optional.empty();
 
         Client client = clientRepository.getClientByPersonalId(clientPersonalId);
-        Room room = roomRepository.getByRoomNumber(roomNumber);
+        Optional<Room> room = roomRepository.getByRoomNumber(roomNumber);
 
-        if (client == null || room == null) return null;
+        if (client == null || room.isEmpty()) return Optional.empty();
 
-        double finalCost = calculateTotalCost(beginTime, endTime, room.getPrice(), board, client.getClientType());
-        Rent rent = new Rent(beginTime, endTime, board, finalCost, client, room);
+        double finalCost = calculateTotalCost(beginTime, endTime, room.get().getPrice(), board, client.getClientType());
+        Rent rent = new Rent(beginTime, endTime, board, finalCost, client, room.get());
 
         return rentRepository.add(rent);
     }
 
 
-//    public Rent updateRentBoard(UUID rentId, boolean board) {
-//        Rent rentToModify = rentRepository.getById(rentId);
-//        rentToModify.setBoard(board);
-//        double newCost = calculateTotalCost(
-//                rentToModify.getBeginTime(),
-//                rentToModify.getEndTime(),
-//                rentToModify.getRoom().getPrice(),
-//                rentToModify.isBoard(),
-//                rentToModify.getClient().getClientType()
-//        );
-//        rentToModify.setFinalCost(newCost);
-//
-//        return rentRepository.update(rentToModify);
-//    }
+    public Rent update(Rent rent) {
+        double newCost = calculateTotalCost(
+                rent.getBeginTime(),
+                rent.getEndTime(),
+                rent.getRoom().getPrice(),
+                rent.isBoard(),
+                rent.getClient().getClientType()
+        );
+        rent.setFinalCost(newCost);
+
+        return rentRepository.update(rent);
+    }
 
     private double calculateTotalCost(LocalDateTime beginTime, LocalDateTime endTime, double costPerDay, boolean board, ClientType clientType) {
         Duration duration = Duration.between(beginTime, endTime);

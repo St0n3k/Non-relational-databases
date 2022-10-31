@@ -3,6 +3,7 @@ package pl.lodz.nbd.repository.impl;
 import com.mongodb.client.ClientSession;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Updates;
 import org.bson.conversions.Bson;
 import pl.lodz.nbd.model.Rent;
 import pl.lodz.nbd.model.Room;
@@ -11,13 +12,14 @@ import pl.lodz.nbd.repository.AbstractMongoRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class RentRepository extends AbstractMongoRepository {
 
     MongoCollection<Rent> rentCollection = mongoDatabase.getCollection("rents", Rent.class);
 
-    public Rent add(Rent rent) {
+    public Optional<Rent> add(Rent rent) {
         try (ClientSession clientSession = mongoClient.startSession()) {
             clientSession.startTransaction();
 
@@ -30,12 +32,12 @@ public class RentRepository extends AbstractMongoRepository {
 
             if (isColliding) {
                 clientSession.abortTransaction();
-                return null;
+                return Optional.empty();
             }
 
             rentCollection.insertOne(rent);
             clientSession.commitTransaction();
-            return rent;
+            return Optional.of(rent);
         }
 
 
@@ -93,18 +95,19 @@ public class RentRepository extends AbstractMongoRepository {
         return rentCollection.find(filter).into(new ArrayList<>());
     }
 
-    //
-//    public Rent update(Rent rent) {
-//        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
-//            em.getTransaction().begin();
-//            Rent newRent = em.merge(rent);
-//            em.getTransaction().commit();
-//            return newRent;
-//        } catch (Exception e) {
-//            return null;
-//        }
-//    }
-//
+
+    public Rent update(Rent rent) {
+
+        Bson filter = Filters.eq("_id", rent.getUuid());
+
+        Bson updateBoard = Updates.set("board", rent.isBoard());
+        Bson updateCost = Updates.set("final_cost", rent.getFinalCost());
+        Bson update = Updates.combine(updateBoard, updateCost);
+
+
+        return rentCollection.findOneAndUpdate(filter, update);
+    }
+
     public boolean isColliding(LocalDateTime beginDate, LocalDateTime endDate, int roomNumber) {
 
         Bson filterRoomNumber = Filters.eq("room.number", roomNumber);
