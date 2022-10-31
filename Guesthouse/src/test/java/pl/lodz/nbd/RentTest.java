@@ -52,8 +52,9 @@ public class RentTest {
     @Test
     void rentRoomTest() {
         Optional<Client> optClient = clientManager.registerClient("Marek", "Kowalski", "000566", "Warszawa", "Astronautów", 1);
+        assertTrue(optClient.isPresent());
         Client client = optClient.get();
-        Optional<Room> optionalRoom = roomManager.getByRoomNumber(400);
+        Optional<Room> optionalRoom = roomManager.addRoom(100, 2, 400);
         assertTrue(optionalRoom.isPresent());
         Room room = optionalRoom.get();
 
@@ -103,7 +104,7 @@ public class RentTest {
                 } catch (InterruptedException | BrokenBarrierException e) {
                     throw new RuntimeException(e);
                 }
-                rentManager.rentRoom(LocalDateTime.now().plusDays(40), LocalDateTime.now().plusDays(41), false, "055566", room.getRoomNumber());
+                rentManager.rentRoom(LocalDateTime.now().plusDays(40), LocalDateTime.now().plusDays(41), false, "065566", room.getRoomNumber());
                 numberFinished.getAndIncrement();
             }));
         }
@@ -175,9 +176,11 @@ public class RentTest {
         clientManager.registerClient("Marek", "Kowalski", "140566", "Warszawa", "Astronautów", 1);
         roomManager.addRoom(100.0, 2, 1400);
 
-        Client client = clientManager.getByPersonalId("140566");
+        Optional<Client> optionalClient = clientManager.getByPersonalId("140566");
         Optional<Room> optionalRoom = roomManager.getByRoomNumber(1400);
+        assertTrue(optionalClient.isPresent());
         assertTrue(optionalRoom.isPresent());
+        Client client = optionalClient.get();
         Room room = optionalRoom.get();
 
         Optional<Rent> optionalRent = rentManager.rentRoom(LocalDateTime.now().plusDays(300), LocalDateTime.now().plusDays(320), false, client.getPersonalId(), room.getRoomNumber());
