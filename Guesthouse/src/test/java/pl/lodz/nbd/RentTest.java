@@ -51,9 +51,8 @@ public class RentTest {
 
     @Test
     void rentRoomTest() {
-        clientManager.registerClient("Marek", "Kowalski", "000566", "Warszawa", "Astronautów", 1);
-        Client client = clientManager.getByPersonalId("000566");
-        roomManager.addRoom(100.0, 2, 400);
+        Optional<Client> optClient = clientManager.registerClient("Marek", "Kowalski", "000566", "Warszawa", "Astronautów", 1);
+        Client client = optClient.get();
         Optional<Room> optionalRoom = roomManager.getByRoomNumber(400);
         assertTrue(optionalRoom.isPresent());
         Room room = optionalRoom.get();
@@ -115,8 +114,7 @@ public class RentTest {
         }
         assertEquals(rentManager.getAllRentsOfRoom(room.getRoomNumber()).size(), 1);
     }
-
-    //
+//
 //    @Test
 //    void optimisticLockTestOverlap() throws BrokenBarrierException, InterruptedException {
 //

@@ -11,6 +11,7 @@ import pl.lodz.nbd.repository.AbstractMongoRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class ClientRepository extends AbstractMongoRepository {
@@ -22,9 +23,16 @@ public class ClientRepository extends AbstractMongoRepository {
 
     MongoCollection<Client> clientCollection = mongoDatabase.getCollection("clients", Client.class);
 
-    public boolean add(Client client) {
+    public Optional<Client> add(Client client) {
+        Optional<Client> optionalClient;
         MongoCollection<Client> clientCollection = mongoDatabase.getCollection("clients", Client.class);
-        return clientCollection.insertOne(client).wasAcknowledged();
+        if(clientCollection.insertOne(client).wasAcknowledged()){
+            optionalClient = Optional.of(client);
+        } else {
+            optionalClient = Optional.empty();
+        }
+
+        return optionalClient;
     }
 
     public List<Client> getAll() {
@@ -38,15 +46,15 @@ public class ClientRepository extends AbstractMongoRepository {
     }
 
 
-    public Client getById(UUID id) {
+    public Optional<Client> getById(UUID id) {
         Bson filter = Filters.eq("_id", id);
-        return mongoDatabase.getCollection("clients", Client.class).find(filter).first();
+        return Optional.ofNullable(mongoDatabase.getCollection("clients", Client.class).find(filter).first());
     }
 
 
-    public Client getClientByPersonalId(String personalId) {
+    public Optional<Client> getClientByPersonalId(String personalId) {
         Bson filter = Filters.eq("personal_id", personalId);
-        return mongoDatabase.getCollection("clients", Client.class).find(filter).first();
+        return Optional.ofNullable(mongoDatabase.getCollection("clients", Client.class).find(filter).first());
     }
 
     public boolean update(Client client) {

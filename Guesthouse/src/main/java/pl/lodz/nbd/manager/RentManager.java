@@ -43,13 +43,14 @@ public class RentManager {
         //Guard clause
         if (beginTime.isAfter(endTime)) return Optional.empty();
 
-        Client client = clientRepository.getClientByPersonalId(clientPersonalId);
+        Optional<Client> client = clientRepository.getClientByPersonalId(clientPersonalId);
         Optional<Room> room = roomRepository.getByRoomNumber(roomNumber);
 
-        if (client == null || room.isEmpty()) return Optional.empty();
 
-        double finalCost = calculateTotalCost(beginTime, endTime, room.get().getPrice(), board, client.getClientType());
-        Rent rent = new Rent(beginTime, endTime, board, finalCost, client, room.get());
+        if (client.isEmpty() || room.isEmpty()) return Optional.empty();
+
+        double finalCost = calculateTotalCost(beginTime, endTime, room.get().getPrice(), board, client.get().getClientType());
+        Rent rent = new Rent(beginTime, endTime, board, finalCost, client.get(), room.get());
 
         return rentRepository.add(rent);
     }
