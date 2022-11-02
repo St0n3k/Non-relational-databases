@@ -23,8 +23,7 @@ import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RentTest {
 
@@ -194,6 +193,53 @@ public class RentTest {
         assertEquals(bronzeRent.getFinalCost(), 100 - (0.05 * 100));
         assertEquals(silverRent.getFinalCost(), 100 - (0.10 * 100));
         assertEquals(goldRent.getFinalCost(), 100 - (0.15 * 100));
+    }
+
+    @Test
+    void getAllRentsOfRoomAndClientTest() {
+        Optional<Room> optionalRoom = roomManager.addRoom(100.0, 2, 2428);
+        Optional<Client> optionalClient = clientManager.registerClient("Jarek", "Taki", "604577", "Wadowice", "Przybyszewskiego", 1);
+
+        assertTrue(optionalClient.isPresent());
+        assertTrue(optionalRoom.isPresent());
+
+        Room room = optionalRoom.get();
+        Client client = optionalClient.get();
+
+        Optional<Rent> optionalRent = rentManager.rentRoom(LocalDateTime.now(), LocalDateTime.now().plusDays(1), false, client.getPersonalId(), room.getRoomNumber());
+
+        assertTrue(optionalRent.isPresent());
+
+        Rent defaultRent = optionalRent.get();
+
+        List<Rent> rents = rentManager.getAllRentsOfRoom(room.getRoomNumber());
+        assertNotNull(rents);
+        assertTrue(rents.size()>0);
+
+        rents = rentManager.getAllRentsOfClient(client.getPersonalId());
+        assertNotNull(rents);
+        assertTrue(rents.size()>0);
+    }
+
+    @Test
+    void removeRentTest(){
+        Optional<Room> optionalRoom = roomManager.addRoom(100.0, 2, 2824);
+        Optional<Client> optionalClient = clientManager.registerClient("Krzysiek", "Jemzupe", "644577", "Wadowice", "Przybyszewskiego", 1);
+
+        assertTrue(optionalClient.isPresent());
+        assertTrue(optionalRoom.isPresent());
+
+        Room room = optionalRoom.get();
+        Client client = optionalClient.get();
+
+        Optional<Rent> optionalRent = rentManager.rentRoom(LocalDateTime.now(), LocalDateTime.now().plusDays(1), false, client.getPersonalId(), room.getRoomNumber());
+
+        assertTrue(optionalRent.isPresent());
+
+        Rent defaultRent = optionalRent.get();
+
+        rentManager.removeRent(defaultRent);
+        assertTrue(rentManager.getRentById(defaultRent.getUuid()).isEmpty());
     }
 
     @Test
