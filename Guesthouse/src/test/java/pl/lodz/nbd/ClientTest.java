@@ -1,10 +1,7 @@
 package pl.lodz.nbd;
 
 import com.mongodb.MongoWriteException;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 import pl.lodz.nbd.manager.ClientManager;
 import pl.lodz.nbd.model.Address;
 import pl.lodz.nbd.model.Client;

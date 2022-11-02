@@ -26,7 +26,7 @@ public class RentManager {
         return rentRepository.getByRoomNumber(roomNumber);
     }
 
-    public Rent getRentById(UUID id) {
+    public Optional<Rent> getRentById(UUID id) {
         return rentRepository.getById(id);
     }
 
@@ -56,7 +56,7 @@ public class RentManager {
     }
 
 
-    public Rent update(Rent rent) {
+    public boolean update(Rent rent) {
         double newCost = calculateTotalCost(
                 rent.getBeginTime(),
                 rent.getEndTime(),

@@ -3,19 +3,28 @@ package pl.lodz.nbd.repository.impl;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Updates;
+import org.bson.Document;
 import org.bson.conversions.Bson;
 import pl.lodz.nbd.model.Room;
 import pl.lodz.nbd.repository.AbstractMongoRepository;
+import pl.lodz.nbd.repository.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public class RoomRepository extends AbstractMongoRepository {
+public class RoomRepository extends AbstractMongoRepository implements Repository<Room> {
 
     MongoCollection<Room> roomCollection = mongoDatabase.getCollection("rooms", Room.class);
+
+    public RoomRepository() {
+        Document index = new Document("number", 1);
+        IndexOptions options = new IndexOptions().unique(true);
+        roomCollection.createIndex(index, options);
+    }
 
     public Optional<Room> add(Room room) {
         if (getByRoomNumber(room.getRoomNumber()).isEmpty()) {

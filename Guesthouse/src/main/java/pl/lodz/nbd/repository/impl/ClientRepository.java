@@ -8,13 +8,14 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import pl.lodz.nbd.model.Client;
 import pl.lodz.nbd.repository.AbstractMongoRepository;
+import pl.lodz.nbd.repository.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public class ClientRepository extends AbstractMongoRepository {
+public class ClientRepository extends AbstractMongoRepository implements Repository<Client> {
     public ClientRepository() {
         Document index = new Document("personal_id", 1);
         IndexOptions options = new IndexOptions().unique(true);
@@ -69,17 +70,4 @@ public class ClientRepository extends AbstractMongoRepository {
         return mongoDatabase.getCollection("clients", Client.class).updateOne(filter, update).wasAcknowledged();
     }
 
-
-//
-//    @Override
-//    public Client update(Client client) {
-//        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
-//            em.getTransaction().begin();
-//            Client newClient = em.merge(client);
-//            em.getTransaction().commit();
-//            return newClient;
-//        } catch (Exception e) {
-//            return null;
-//        }
-//    }
 }

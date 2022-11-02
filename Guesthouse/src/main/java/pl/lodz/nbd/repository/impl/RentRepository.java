@@ -8,6 +8,7 @@ import org.bson.conversions.Bson;
 import pl.lodz.nbd.model.Rent;
 import pl.lodz.nbd.model.Room;
 import pl.lodz.nbd.repository.AbstractMongoRepository;
+import pl.lodz.nbd.repository.Repository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -15,11 +16,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public class RentRepository extends AbstractMongoRepository {
+public class RentRepository extends AbstractMongoRepository implements Repository<Rent> {
 
     MongoCollection<Rent> rentCollection = mongoDatabase.getCollection("rents", Rent.class);
 
-    public Optional<Rent> add(Rent rent) {
+    public synchronized Optional<Rent> add(Rent rent) {
         try (ClientSession clientSession = mongoClient.startSession()) {
             clientSession.startTransaction();
 
@@ -36,6 +37,7 @@ public class RentRepository extends AbstractMongoRepository {
             }
 
             rentCollection.insertOne(rent);
+
             clientSession.commitTransaction();
             return Optional.of(rent);
         }
@@ -76,9 +78,9 @@ public class RentRepository extends AbstractMongoRepository {
     }
 
 
-    public Rent getById(UUID id) {
+    public Optional<Rent> getById(UUID id) {
         Bson filter = Filters.eq("_id", id);
-        return rentCollection.find(filter).first();
+        return Optional.ofNullable(rentCollection.find(filter).first());
     }
 
     public List<Rent> getAll() {
@@ -96,7 +98,7 @@ public class RentRepository extends AbstractMongoRepository {
     }
 
 
-    public Rent update(Rent rent) {
+    public boolean update(Rent rent) {
 
         Bson filter = Filters.eq("_id", rent.getUuid());
 
@@ -105,7 +107,7 @@ public class RentRepository extends AbstractMongoRepository {
         Bson update = Updates.combine(updateBoard, updateCost);
 
 
-        return rentCollection.findOneAndUpdate(filter, update);
+        return rentCollection.updateOne(filter, update).wasAcknowledged();
     }
 
     public boolean isColliding(LocalDateTime beginDate, LocalDateTime endDate, int roomNumber) {

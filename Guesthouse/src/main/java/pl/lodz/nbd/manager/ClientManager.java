@@ -42,4 +42,10 @@ public class ClientManager {
     public boolean updateClient(Client client) {
         return clientRepository.update(client);
     }
+
+    public void changeTypeTo(Client client, Class newType) {
+        ClientType ct = clientTypeRepository.getByType(newType);
+        client.setClientType(ct);
+        updateClient(client);
+    }
 }

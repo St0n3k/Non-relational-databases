@@ -3,19 +3,21 @@ package pl.lodz.nbd.repository.impl;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.InsertOneResult;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import pl.lodz.nbd.model.ClientTypes.ClientType;
-import pl.lodz.nbd.model.ClientTypes.Gold;
 import pl.lodz.nbd.repository.AbstractMongoRepository;
+import pl.lodz.nbd.repository.Repository;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
-public class ClientTypeRepository extends AbstractMongoRepository {
+public class ClientTypeRepository extends AbstractMongoRepository implements Repository<ClientType> {
 
     MongoCollection<ClientType> clientTypeCollection = mongoDatabase.getCollection("client_types", ClientType.class);
 
@@ -25,12 +27,12 @@ public class ClientTypeRepository extends AbstractMongoRepository {
         clientTypeCollection.createIndex(index, options);
     }
 
-    public ClientType add(ClientType clientType) {
+    public Optional<ClientType> add(ClientType clientType) {
         InsertOneResult insertOneResult = clientTypeCollection.insertOne(clientType);
         if (insertOneResult.wasAcknowledged()) {
-            return clientType;
+            return Optional.of(clientType);
         } else {
-            return null;
+            return Optional.empty();
         }
     }
 
@@ -41,22 +43,19 @@ public class ClientTypeRepository extends AbstractMongoRepository {
     }
 
 
-    public ClientType getById(UUID id) {
+    public Optional<ClientType> getById(UUID id) {
         Bson filter = Filters.eq("_id", id);
-        return clientTypeCollection.find(filter).first();
+        return Optional.ofNullable(clientTypeCollection.find(filter).first());
     }
 
-//    @Override
-//    public ClientType update(ClientType clientType) {
-//        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
-//            em.getTransaction().begin();
-//            ClientType newClientType = em.find(ClientType.class, clientType.getId());
-//            em.getTransaction().commit();
-//            return newClientType;
-//        } catch (Exception e) {
-//            return null;
-//        }
-//    }
+    @Override
+    public boolean update(ClientType ct) {
+        Bson filter = Filters.eq("_id", ct.getUuid());
+        Bson update = Updates.set("discount", ct.getDiscount());
+
+        return clientTypeCollection.updateOne(filter, update).wasAcknowledged();
+    }
+
 
 
     public List<ClientType> getAll() {
@@ -67,9 +66,10 @@ public class ClientTypeRepository extends AbstractMongoRepository {
     public ClientType getByType(Class type){
         Bson filter = Filters.eq("_clazz", type.getName());
         ClientType clientType = clientTypeCollection.find(filter).first();
-        if(clientType == null){
+        if (clientType == null) {
             try {
-                return add((ClientType) type.getConstructor().newInstance());
+                Optional<ClientType> ct = add((ClientType) type.getConstructor().newInstance());
+                if (ct.isPresent()) return ct.get();
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                 e.printStackTrace();
             }
