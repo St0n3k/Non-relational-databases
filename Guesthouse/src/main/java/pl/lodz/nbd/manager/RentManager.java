@@ -39,8 +39,7 @@ public class RentManager {
     }
 
     public Optional<Rent> rentRoom(LocalDateTime beginTime, LocalDateTime endTime, boolean board, String clientPersonalId, int roomNumber) {
-
-        //Guard clause
+        
         if (beginTime.isAfter(endTime)) return Optional.empty();
 
         Optional<Client> client = clientRepository.getClientByPersonalId(clientPersonalId);

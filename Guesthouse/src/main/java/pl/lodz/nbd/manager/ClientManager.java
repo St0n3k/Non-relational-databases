@@ -22,8 +22,7 @@ public class ClientManager {
         Address address = new Address(city, street, number);
         ClientType defaultClientType = clientTypeRepository.getByType(Default.class);
         Client client = new Client(firstName, lastName, personalId, address, defaultClientType);
-
-        System.out.println(client.getUuid());
+        
         return clientRepository.add(client);
     }
 

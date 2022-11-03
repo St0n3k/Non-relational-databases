@@ -1,6 +1,6 @@
 package pl.lodz.nbd.repository.impl;
 
-import com.mongodb.client.ClientSession;
+import com.mongodb.MongoWriteException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
@@ -19,57 +19,33 @@ import java.util.UUID;
 public class RentRepository extends AbstractMongoRepository implements Repository<Rent> {
 
     MongoCollection<Rent> rentCollection = mongoDatabase.getCollection("rents", Rent.class);
+    MongoCollection<Room> roomCollection = mongoDatabase.getCollection("rooms", Room.class);
 
-    public synchronized Optional<Rent> add(Rent rent) {
-        try (ClientSession clientSession = mongoClient.startSession()) {
-            clientSession.startTransaction();
+    public RentRepository() {
+        rentCollection.drop();
+        rentCollection = mongoDatabase.getCollection("rents", Rent.class);
+    }
 
-            Room room = rent.getRoom();
+    public Optional<Rent> add(Rent rent) {
 
-            boolean isColliding = isColliding(
-                    rent.getBeginTime(),
-                    rent.getEndTime(),
-                    room.getRoomNumber());
+        int roomNumber = rent.getRoom().getRoomNumber();
 
-            if (isColliding) {
-                clientSession.abortTransaction();
-                return Optional.empty();
-            }
-
-            rentCollection.insertOne(rent);
-
-            clientSession.commitTransaction();
-            return Optional.of(rent);
+        if (!updateIsBeingRented(roomNumber, true)) {
+            return add(rent);
         }
+        boolean colliding = isColliding(
+                rent.getBeginTime(),
+                rent.getEndTime(),
+                roomNumber);
 
+        if (colliding) {
+            updateIsBeingRented(roomNumber, false);
+            return Optional.empty();
+        }
+        rentCollection.insertOne(rent);
+        updateIsBeingRented(roomNumber, false);
 
-//        try (EntityManager em = EntityManagerCreator.getEntityManager()) {
-//            em.getTransaction().begin();
-//
-//            Room room = em.find(Room.class, rent.getRoom().getId());
-//
-//            em.lock(room, LockModeType.OPTIMISTIC_FORCE_INCREMENT);
-//
-//            boolean isColliding = isColliding(
-//                    rent.getBeginTime(),
-//                    rent.getEndTime(),
-//                    room.getRoomNumber());
-//
-//            if (isColliding) return null;
-//
-//            em.persist(rent);
-//
-//            em.getTransaction().commit();
-//            return rent;
-//        } catch (RollbackException e) {
-//            System.out.println("Repeating transaction");
-//            //We have to set id to null, because in transaction,
-//            //rent gets id on persist, but on failed transaction it not gets back to null
-//            rent.setId(null);
-//            return add(rent);
-//        } catch (Exception e) {
-//            return null;
-//        }
+        return Optional.of(rent);
     }
 
     public void remove(Rent rent) {
@@ -135,4 +111,20 @@ public class RentRepository extends AbstractMongoRepository implements Repositor
 
         return !rentsColliding.isEmpty();
     }
+
+    public boolean updateIsBeingRented(int roomNumber, boolean increment) {
+        Bson filter = Filters.eq("number", roomNumber);
+        Bson updateIsBeingRented;
+        if (increment) {
+            updateIsBeingRented = Updates.inc("is_being_rented", 1);
+        } else {
+            updateIsBeingRented = Updates.set("is_being_rented", 0);
+        }
+        try {
+            return roomCollection.updateOne(filter, updateIsBeingRented).wasAcknowledged();
+        } catch (MongoWriteException e) {
+            return false;
+        }
+    }
+
 }

@@ -1,6 +1,7 @@
 package pl.lodz.nbd;
 
 import org.junit.jupiter.api.Test;
+import pl.lodz.nbd.common.RepositoryCreator;
 import pl.lodz.nbd.manager.ClientManager;
 import pl.lodz.nbd.manager.RentManager;
 import pl.lodz.nbd.manager.RoomManager;
@@ -16,6 +17,7 @@ import pl.lodz.nbd.repository.impl.RentRepository;
 import pl.lodz.nbd.repository.impl.RoomRepository;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -27,29 +29,40 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class RentTest {
 
-    private static final RoomRepository roomRepository = new RoomRepository();
-    private static final RentRepository rentRepository = new RentRepository();
-    private static final ClientRepository clientRepository = new ClientRepository();
-    private static final ClientTypeRepository clientTypeRepository = new ClientTypeRepository();
+    private static final RoomRepository roomRepository = RepositoryCreator.getRoomRepository();
+    private static final RentRepository rentRepository = RepositoryCreator.getRentRepository();
+    private static final ClientRepository clientRepository = RepositoryCreator.getClientRepository();
+    private static final ClientTypeRepository clientTypeRepository = RepositoryCreator.getClientTypeRepository();
     private static final ClientManager clientManager = new ClientManager(clientRepository, clientTypeRepository);
     private static final RoomManager roomManager = new RoomManager(roomRepository);
     private static final RentManager rentManager = new RentManager(clientRepository, roomRepository, rentRepository);
 
-    void initializeData() {
-        clientManager.registerClient("Jerzy", "Dudek", "999777", "Wisła", "Karpacka", 22);
-        clientManager.registerClient("Kamil", "Stoch", "999888", "Odra", "Wiślana", 32);
-        clientManager.registerClient("Remigiusz", "Dudek", "999999", "Wrocław", "Łódzka", 44);
 
-        roomManager.addRoom(120, 2, 2137);
-        roomManager.addRoom(210, 3, 999);
-        roomManager.addRoom(102, 1, 998);
+    @Test
+    void rentMapperTest() {
+        Optional<Client> optClient = clientManager.registerClient("Marek", "Kowalski", "45463566", "Warszawa", "Astronautów", 1);
+        assertTrue(optClient.isPresent());
+        Client client = optClient.get();
+        Optional<Room> optionalRoom = roomManager.addRoom(100, 2, 4530);
+        assertTrue(optionalRoom.isPresent());
+        Room room = optionalRoom.get();
+        
+        Rent rent = new Rent(LocalDateTime.now().plusDays(17333), LocalDateTime.now().plusDays(20333), true, 10000, client, room);
+        rentRepository.add(rent);
 
-        rentManager.rentRoom(LocalDateTime.now(), LocalDateTime.now().plusDays(2), true, "999999", 999);
-        rentManager.rentRoom(LocalDateTime.now().plusDays(2), LocalDateTime.now().plusDays(4), true, "999777", 999);
-        rentManager.rentRoom(LocalDateTime.now().plusDays(6), LocalDateTime.now().plusDays(10), true, "999888", 998);
-        rentManager.rentRoom(LocalDateTime.now(), LocalDateTime.now().plusDays(4), true, "999888", 998);
-        rentManager.rentRoom(LocalDateTime.now().plusDays(1300), LocalDateTime.now().plusDays(1400), true, "999777", 2137);
+        Optional<Rent> optionalRent = rentRepository.getById(rent.getUuid());
+        assertTrue(optionalRent.isPresent());
+
+        Rent rentFromRepo = optionalRent.get();
+
+        assertEquals(rentFromRepo.getBeginTime().truncatedTo(ChronoUnit.MILLIS), rent.getBeginTime().truncatedTo(ChronoUnit.MILLIS));
+        assertEquals(rentFromRepo.getEndTime().truncatedTo(ChronoUnit.MILLIS), rent.getEndTime().truncatedTo(ChronoUnit.MILLIS));
+        assertEquals(rentFromRepo.getFinalCost(), rent.getFinalCost());
+        assertEquals(rentFromRepo.getRoom(), rent.getRoom());
+        assertEquals(rentFromRepo.getClient(), rent.getClient());
+        assertEquals(rentFromRepo.getUuid(), rent.getUuid());
     }
+
 
     @Test
     void rentRoomTest() {
@@ -207,22 +220,17 @@ public class RentTest {
         Client client = optionalClient.get();
 
         Optional<Rent> optionalRent = rentManager.rentRoom(LocalDateTime.now(), LocalDateTime.now().plusDays(1), false, client.getPersonalId(), room.getRoomNumber());
-
         assertTrue(optionalRent.isPresent());
 
-        Rent defaultRent = optionalRent.get();
-
         List<Rent> rents = rentManager.getAllRentsOfRoom(room.getRoomNumber());
-        assertNotNull(rents);
-        assertTrue(rents.size()>0);
+        assertTrue(rents.size() > 0);
 
         rents = rentManager.getAllRentsOfClient(client.getPersonalId());
-        assertNotNull(rents);
-        assertTrue(rents.size()>0);
+        assertTrue(rents.size() > 0);
     }
 
     @Test
-    void removeRentTest(){
+    void removeRentTest() {
         Optional<Room> optionalRoom = roomManager.addRoom(100.0, 2, 2824);
         Optional<Client> optionalClient = clientManager.registerClient("Krzysiek", "Jemzupe", "644577", "Wadowice", "Przybyszewskiego", 1);
 
@@ -271,4 +279,14 @@ public class RentTest {
         //Plus 50 per day, because of board option
         assertEquals(20 * (100 + 50), rent.getFinalCost());
     }
+
+    @Test
+    void isRoomBeingRentedConstraintTest() {
+        Optional<Room> optionalRoom = roomManager.addRoom(17, 17, 17);
+        assertTrue(optionalRoom.isPresent());
+        Room room = optionalRoom.get();
+        assertTrue(rentRepository.updateIsBeingRented(room.getRoomNumber(), true));
+        assertFalse(rentRepository.updateIsBeingRented(room.getRoomNumber(), true));
+    }
+
 }

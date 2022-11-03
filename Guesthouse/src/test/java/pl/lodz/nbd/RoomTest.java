@@ -1,6 +1,7 @@
 package pl.lodz.nbd;
 
 import org.junit.jupiter.api.Test;
+import pl.lodz.nbd.common.RepositoryCreator;
 import pl.lodz.nbd.manager.RoomManager;
 import pl.lodz.nbd.model.Room;
 import pl.lodz.nbd.repository.impl.RoomRepository;
@@ -12,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class RoomTest {
 
-    private static final RoomRepository roomRepository = new RoomRepository();
+    private static final RoomRepository roomRepository = RepositoryCreator.getRoomRepository();
 
     private static final RoomManager roomManager = new RoomManager(roomRepository);
 
@@ -49,6 +50,7 @@ public class RoomTest {
         assertTrue(roomManager.getByRoomNumber(101).isPresent());
         assertTrue(roomManager.getByRoomNumber(300).isEmpty());
     }
+
 
     @Test
     void updateRoomTest() {

@@ -24,14 +24,19 @@ public class Room extends AbstractEntity {
     @BsonProperty("size")
     private int size;
 
+    @BsonProperty("is_being_rented")
+    private int isBeingRented = 0;
+
     public Room(@BsonProperty("_id") UUID id,
                 @BsonProperty("number") int roomNumber,
                 @BsonProperty("price") double price,
-                @BsonProperty("size") int size) {
+                @BsonProperty("size") int size,
+                @BsonProperty("is_being_rented") int isBeingRented) {
         super(id);
         this.roomNumber = roomNumber;
         this.price = price;
         this.size = size;
+        this.isBeingRented = isBeingRented;
     }
 
     public Room(int roomNumber, double price, int size) {

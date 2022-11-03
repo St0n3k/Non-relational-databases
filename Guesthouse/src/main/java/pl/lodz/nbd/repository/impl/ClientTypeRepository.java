@@ -22,6 +22,8 @@ public class ClientTypeRepository extends AbstractMongoRepository implements Rep
     MongoCollection<ClientType> clientTypeCollection = mongoDatabase.getCollection("client_types", ClientType.class);
 
     public ClientTypeRepository() {
+        clientTypeCollection.drop();
+        clientTypeCollection = mongoDatabase.getCollection("client_types", ClientType.class);
         Document index = new Document("_clazz", 1);
         IndexOptions options = new IndexOptions().unique(true);
         clientTypeCollection.createIndex(index, options);
@@ -57,20 +59,19 @@ public class ClientTypeRepository extends AbstractMongoRepository implements Rep
     }
 
 
-
     public List<ClientType> getAll() {
-
         return clientTypeCollection.find().into(new ArrayList<>());
     }
 
-    public ClientType getByType(Class type){
+    public ClientType getByType(Class type) {
         Bson filter = Filters.eq("_clazz", type.getName());
         ClientType clientType = clientTypeCollection.find(filter).first();
         if (clientType == null) {
             try {
                 Optional<ClientType> ct = add((ClientType) type.getConstructor().newInstance());
                 if (ct.isPresent()) return ct.get();
-            } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                     NoSuchMethodException e) {
                 e.printStackTrace();
             }
         }

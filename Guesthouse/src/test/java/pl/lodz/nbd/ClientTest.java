@@ -1,7 +1,7 @@
 package pl.lodz.nbd;
 
-import com.mongodb.MongoWriteException;
 import org.junit.jupiter.api.Test;
+import pl.lodz.nbd.common.RepositoryCreator;
 import pl.lodz.nbd.manager.ClientManager;
 import pl.lodz.nbd.model.Address;
 import pl.lodz.nbd.model.Client;
@@ -19,23 +19,21 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ClientTest {
 
-    private static final ClientRepository clientRepository = new ClientRepository();
-    private static final ClientTypeRepository clientTypeRepository = new ClientTypeRepository();
+    private static final ClientRepository clientRepository = RepositoryCreator.getClientRepository();
+    private static final ClientTypeRepository clientTypeRepository = RepositoryCreator.getClientTypeRepository();
     private static final ClientManager clientManager = new ClientManager(clientRepository, clientTypeRepository);
 
     @Test
     void positiveRegisterClientTest() {
         assertTrue(clientManager.registerClient("Aleksander",
                 "Wicher", "123456", "Warszawa", "Smutna", 7).isPresent());
-
     }
 
     @Test
     void negativeRegisterClientTest() {
         assertTrue(clientManager.registerClient("Aleksander",
                 "Wichrzyński", "12345", "Warszawa", "Smutna", 7).isPresent());
-        assertThrows(MongoWriteException.class, () -> clientManager.registerClient("Aleksander",
-                "Wichrzyński", "12345", "Warszawa", "Smutna", 7));
+        assertFalse(clientManager.registerClient("Aleksander", "Wichrzyński", "12345", "Warszawa", "Smutna", 7).isPresent());
     }
 
     @Test
@@ -45,11 +43,10 @@ public class ClientTest {
         List<Client> clients = clientManager.getAllClients();
         assertNotNull(clients);
         assertTrue(clients.size() > 0);
-
     }
 
     @Test
-    void getClientByIdTest() {
+    void clientMapperTest() {
         Address address = new Address("Warszawa", "Smutna", 7);
         Default def = new Default();
         Client client = new Client("Artur", "Boruc", "124421", address, def);
@@ -60,7 +57,7 @@ public class ClientTest {
 
         Client same = new Client("Artur", "Boruc", "124421", address, def);
 
-        assertNotEquals(client, same);
+        assertNotEquals(client, same); // UUID is different
         assertNotEquals(client2.get(), same);
     }
 
@@ -82,7 +79,7 @@ public class ClientTest {
         client.setFirstName("Marcin");
         Address newAddress = new Address("Ozorków", "Wesoła", 32);
         client.setAddress(newAddress);
-        client.setClientType(new Silver());
+        client.setClientType(clientTypeRepository.getByType(Silver.class));
         assertTrue(clientManager.updateClient(client));
 
         Optional<Client> optClient2 = clientManager.getByPersonalId(client.getPersonalId());
@@ -104,9 +101,8 @@ public class ClientTest {
     }
 
     @Test
-    void negativeGetClientByPersonalIdTest(){
+    void negativeGetClientByPersonalIdTest() {
         Optional<Client> client = clientManager.getByPersonalId("abcdef");
         assertTrue(client.isEmpty());
     }
-
 }

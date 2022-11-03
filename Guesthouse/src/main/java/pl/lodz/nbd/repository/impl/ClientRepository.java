@@ -1,5 +1,6 @@
 package pl.lodz.nbd.repository.impl;
 
+import com.mongodb.MongoWriteException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.IndexOptions;
@@ -16,24 +17,30 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class ClientRepository extends AbstractMongoRepository implements Repository<Client> {
+
+    MongoCollection<Client> clientCollection = mongoDatabase.getCollection("clients", Client.class);
+
     public ClientRepository() {
+        clientCollection.drop();
+        clientCollection = mongoDatabase.getCollection("clients", Client.class);
         Document index = new Document("personal_id", 1);
         IndexOptions options = new IndexOptions().unique(true);
         clientCollection.createIndex(index, options);
     }
 
-    MongoCollection<Client> clientCollection = mongoDatabase.getCollection("clients", Client.class);
 
     public Optional<Client> add(Client client) {
         Optional<Client> optionalClient;
-        MongoCollection<Client> clientCollection = mongoDatabase.getCollection("clients", Client.class);
-        if(clientCollection.insertOne(client).wasAcknowledged()){
-            optionalClient = Optional.of(client);
-        } else {
-            optionalClient = Optional.empty();
+        try {
+            if (clientCollection.insertOne(client).wasAcknowledged()) {
+                optionalClient = Optional.of(client);
+            } else {
+                optionalClient = Optional.empty();
+            }
+            return optionalClient;
+        } catch (MongoWriteException e) {
+            return Optional.empty();
         }
-
-        return optionalClient;
     }
 
     public List<Client> getAll() {
