@@ -17,7 +17,7 @@ import java.util.List;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
 public abstract class AbstractMongoRepository {
-    private final ConnectionString connectionString = new ConnectionString("mongodb://localhost:27017,localhost:27018,localhost:27019/?replicaSet=replica_set_single");
+    private final ConnectionString connectionString = new ConnectionString("mongodb://localhost:27017");
     private final MongoCredential mongoCredential = MongoCredential.createCredential("nbd", "admin", "nbdpassword".toCharArray());
 
     private final CodecRegistry pojoCodecRegistry = CodecRegistries.fromProviders(

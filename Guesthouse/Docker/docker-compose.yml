@@ -19,42 +19,6 @@ services:
       interval: 10s
       timeout: 2s
       retries: 5
-  mongo2:
-    build: .
-    image: mongocustom
-    container_name: mongodb2
-    hostname: mongodb2
-    ports:
-      - "27018:27018"
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=nbd
-      - MONGO_INITDB_ROOT_PASSWORD=nbdpassword
-    command: --config /etc/mongod.conf
-    networks:
-      - mongonet
-    healthcheck:
-      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
-      interval: 10s
-      timeout: 2s
-      retries: 5
-  mongo3:
-    build: .
-    image: mongocustom
-    container_name: mongodb3
-    hostname: mongodb3
-    ports:
-      - "27019:27019"
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=nbd
-      - MONGO_INITDB_ROOT_PASSWORD=nbdpassword
-    command: --config /etc/mongod.conf
-    networks:
-      - mongonet
-    healthcheck:
-      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
-      interval: 10s
-      timeout: 2s
-      retries: 5
   mongoinit:
     build: .
     image: mongocustom
@@ -62,10 +26,6 @@ services:
     hostname: mongodbinit
     depends_on:
       mongo1:
-        condition: service_healthy
-      mongo2:
-        condition: service_healthy
-      mongo3:
         condition: service_healthy
     networks:
       - mongonet
@@ -76,17 +36,22 @@ services:
       --password nbdpassword
       --authenticationDatabase admin --eval
       '
-      rs.initiate(
-        {
-           _id: "replica_set_single",
-           version: 1,
-           members: [
-              { _id: 0, host : "mongodb1" },
-              { _id: 1, host : "mongodb2" },
-              { _id: 2, host : "mongodb3" }
-           ]
-        }
-      )
+      rs.initiate()
       '
+  redis-stack:
+    image: redis/redis-stack:latest
+    volumes:
+      - redis-stack-data:/bitnami/redis/data
+    ports:
+      - "8001:8001"
+      - "6379:6379"
+    networks:
+      - redisnet
+
+volumes:
+  redis-stack-data:
+    driver: local
+
 networks:
   mongonet: { }
+  redisnet: { }
