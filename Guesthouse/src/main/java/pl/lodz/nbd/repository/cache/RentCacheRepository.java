@@ -1,6 +1,9 @@
 package pl.lodz.nbd.repository.cache;
 
-import org.json.JSONObject;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import pl.lodz.nbd.common.ClientTypeInstanceCreator;
+import pl.lodz.nbd.model.ClientTypes.ClientType;
 import pl.lodz.nbd.model.Rent;
 import pl.lodz.nbd.repository.impl.RentRepository;
 import redis.clients.jedis.DefaultJedisClientConfig;
@@ -15,44 +18,48 @@ import java.util.UUID;
 
 public class RentCacheRepository extends RentRepository {
 
-    private JedisPooled pool;
+    private final JedisPooled pool;
+    private final Gson gson;
 
     public RentCacheRepository() {
         JedisClientConfig clientConfig = DefaultJedisClientConfig.builder().build();
         pool = new JedisPooled(new HostAndPort("localhost", 6379), clientConfig);
+        gson = new GsonBuilder().registerTypeAdapter(ClientType.class, new ClientTypeInstanceCreator()).create();
     }
 
 
     @Override
     public Optional<Rent> add(Rent rent) {
-        pool.jsonSet("rents:" + rent.getUuid(), new JSONObject(rent));
-        pool.expire("rents:" + rent.getUuid(), 15);
+        pool.jsonSet("rents:" + rent.getUuid(), gson.toJson(rent));
+        pool.expire("rents:" + rent.getUuid(), 60);
         return super.add(rent);
     }
 
     @Override
     public void remove(Rent rent) {
+        pool.jsonDel("rents:" + rent.getUuid());
         super.remove(rent);
     }
 
     @Override
     public Optional<Rent> getById(UUID id) {
-//        ObjectMapper objectMapper = new ObjectMapper();
-//        objectMapper.findAndRegisterModules();
-//        //Rent rent = pool.jsonGet("rents:" + id, Rent.class);
-//        Rent rent;
-//        try {
-//            rent = objectMapper.readValue(pool.get("rents:" + id), Rent.class);
-//        } catch (JsonProcessingException e) {
-//            throw new RuntimeException(e);
-//        }
-//        System.out.println(rent);
+
+        Rent rent = pool.jsonGet("rents:" + id, Rent.class);
+
+        if (rent != null) {
+            System.out.println("Got rent from cache!");
+            return Optional.of(rent);
+        }
         return super.getById(id);
     }
 
     @Override
     public List<Rent> getAll() {
-        return super.getAll();
+        List<Rent> rents = super.getAll();
+        rents.forEach((rent -> new Thread(() -> {
+            pool.jsonSet("rents:" + rent.getUuid(), gson.toJson(rent));
+        }).start()));
+        return rents;
     }
 
     @Override
@@ -67,6 +74,7 @@ public class RentCacheRepository extends RentRepository {
 
     @Override
     public boolean update(Rent rent) {
+        pool.jsonSet("rents:" + rent.getUuid(), gson.toJson(rent));
         return super.update(rent);
     }
 

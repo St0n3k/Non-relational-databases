@@ -46,7 +46,7 @@ public class RentTest {
         Optional<Room> optionalRoom = roomManager.addRoom(100, 2, 4530);
         assertTrue(optionalRoom.isPresent());
         Room room = optionalRoom.get();
-        
+
         Rent rent = new Rent(LocalDateTime.now().plusDays(17333), LocalDateTime.now().plusDays(20333), true, 10000, client, room);
         rentRepository.add(rent);
 
@@ -130,6 +130,7 @@ public class RentTest {
         }
         assertEquals(rentManager.getAllRentsOfRoom(room.getRoomNumber()).size(), 1);
     }
+
 
     @Test
     void optimisticLockTestOverlap() throws BrokenBarrierException, InterruptedException {
