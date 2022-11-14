@@ -54,6 +54,7 @@ public class ClientTest {
         Optional<Client> client2 = clientManager.getByPersonalId(client.getPersonalId());
         assertTrue(client2.isPresent());
         assertEquals(client, client2.get());
+        assertTrue(client2.get().getClientType() instanceof Default);
 
         Client same = new Client("Artur", "Boruc", "124421", address, def);
 

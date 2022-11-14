@@ -7,6 +7,7 @@ import pl.lodz.nbd.manager.RentManager;
 import pl.lodz.nbd.manager.RoomManager;
 import pl.lodz.nbd.model.Client;
 import pl.lodz.nbd.model.ClientTypes.Bronze;
+import pl.lodz.nbd.model.ClientTypes.Default;
 import pl.lodz.nbd.model.ClientTypes.Gold;
 import pl.lodz.nbd.model.ClientTypes.Silver;
 import pl.lodz.nbd.model.Rent;
@@ -187,19 +188,31 @@ public class RentTest {
 
         Rent defaultRent = optionalRent.get();
 
+        Rent testRent = rentManager.getRentById(optionalRent.get().getUuid()).get();
+        assertTrue(testRent.getClient().getClientType() instanceof Default);
+
         clientManager.changeTypeTo(client, Bronze.class);
         optionalClient = clientManager.getByPersonalId(client.getPersonalId());
         client = optionalClient.get();
         optionalRent = rentManager.rentRoom(LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(2), false, client.getPersonalId(), room.getRoomNumber());
 
+        testRent = rentManager.getRentById(optionalRent.get().getUuid()).get();
+        assertTrue(testRent.getClient().getClientType() instanceof Bronze);
+
         Rent bronzeRent = optionalRent.get();
         clientManager.changeTypeTo(client, Silver.class);
         optionalRent = rentManager.rentRoom(LocalDateTime.now().plusDays(2), LocalDateTime.now().plusDays(3), false, client.getPersonalId(), room.getRoomNumber());
+
+        testRent = rentManager.getRentById(optionalRent.get().getUuid()).get();
+        assertTrue(testRent.getClient().getClientType() instanceof Silver);
 
         Rent silverRent = optionalRent.get();
 
         clientManager.changeTypeTo(client, Gold.class);
         optionalRent = rentManager.rentRoom(LocalDateTime.now().plusDays(4), LocalDateTime.now().plusDays(5), false, client.getPersonalId(), room.getRoomNumber());
+
+        testRent = rentManager.getRentById(optionalRent.get().getUuid()).get();
+        assertTrue(testRent.getClient().getClientType() instanceof Gold);
 
         Rent goldRent = optionalRent.get();
 
