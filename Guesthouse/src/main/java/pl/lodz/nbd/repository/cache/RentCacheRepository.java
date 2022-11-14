@@ -10,6 +10,7 @@ import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisPooled;
+import redis.clients.jedis.json.Path;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,48 +19,59 @@ import java.util.UUID;
 
 public class RentCacheRepository extends RentRepository {
 
-    private final JedisPooled pool;
-    private final Gson gson;
+    private JedisPooled pool;
+    private Gson gson;
+
+    private boolean connected;
+
 
     public RentCacheRepository() {
-        JedisClientConfig clientConfig = DefaultJedisClientConfig.builder().build();
-        pool = new JedisPooled(new HostAndPort("localhost", 6379), clientConfig);
-        gson = new GsonBuilder().registerTypeAdapter(ClientType.class, new ClientTypeInstanceCreator()).create();
-    }
+        try {
+            gson = new GsonBuilder().registerTypeAdapter(ClientType.class, new ClientTypeInstanceCreator()).create();
 
+            JedisClientConfig clientConfig = DefaultJedisClientConfig.builder().socketTimeoutMillis(100).build();
+            pool = new JedisPooled(new HostAndPort("localhost", 6379), clientConfig);
+            pool.set("ping", "ping");
+            connected = true;
+        } catch (Exception e) {
+            connected = false;
+        }
+    }
 
     @Override
     public Optional<Rent> add(Rent rent) {
-        pool.jsonSet("rents:" + rent.getUuid(), gson.toJson(rent));
-        pool.expire("rents:" + rent.getUuid(), 60);
+        if (connected) {
+            pool.jsonSet("rents:" + rent.getUuid(), gson.toJson(rent));
+            pool.expire("rents:" + rent.getUuid(), 60);
+        }
         return super.add(rent);
     }
 
     @Override
     public void remove(Rent rent) {
-        pool.jsonDel("rents:" + rent.getUuid());
+        if (connected) {
+            pool.jsonDel("rents:" + rent.getUuid());
+        }
         super.remove(rent);
     }
 
     @Override
     public Optional<Rent> getById(UUID id) {
+        if (connected) {
+            String json = pool.jsonGetAsPlainString("rents:" + id, Path.ROOT_PATH);
+            Rent rent = gson.fromJson(json, Rent.class);
 
-        Rent rent = pool.jsonGet("rents:" + id, Rent.class);
-
-        if (rent != null) {
-            System.out.println("Got rent from cache!");
-            return Optional.of(rent);
+            if (rent != null) {
+                System.out.println("Got rent from cache!");
+                return Optional.of(rent);
+            }
         }
         return super.getById(id);
     }
 
     @Override
     public List<Rent> getAll() {
-        List<Rent> rents = super.getAll();
-        rents.forEach((rent -> new Thread(() -> {
-            pool.jsonSet("rents:" + rent.getUuid(), gson.toJson(rent));
-        }).start()));
-        return rents;
+        return super.getAll();
     }
 
     @Override
@@ -74,8 +86,11 @@ public class RentCacheRepository extends RentRepository {
 
     @Override
     public boolean update(Rent rent) {
-        pool.jsonSet("rents:" + rent.getUuid(), gson.toJson(rent));
-        return super.update(rent);
+        boolean successful = super.update(rent);
+        if (connected && successful) {
+            pool.jsonSet("rents:" + rent.getUuid(), gson.toJson(rent));
+        }
+        return successful;
     }
 
     @Override
