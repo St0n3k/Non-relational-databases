@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @Data
 @BsonDiscriminator(key = "_clazz", value = "pl.lodz.nbd.model.ClientTypes.ClientType")
-public class ClientType extends AbstractEntity {
+public abstract class ClientType extends AbstractEntity {
     @BsonProperty("discount")
     private double discount;
 

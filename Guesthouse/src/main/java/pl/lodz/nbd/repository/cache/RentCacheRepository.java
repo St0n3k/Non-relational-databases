@@ -10,6 +10,7 @@ import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisPooled;
+import redis.clients.jedis.json.Path;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -44,7 +45,8 @@ public class RentCacheRepository extends RentRepository {
     @Override
     public Optional<Rent> getById(UUID id) {
 
-        Rent rent = pool.jsonGet("rents:" + id, Rent.class);
+        String json = pool.jsonGetAsPlainString("rents:" + id, Path.ROOT_PATH);
+        Rent rent = gson.fromJson(json, Rent.class);
 
         if (rent != null) {
             System.out.println("Got rent from cache!");
@@ -56,9 +58,9 @@ public class RentCacheRepository extends RentRepository {
     @Override
     public List<Rent> getAll() {
         List<Rent> rents = super.getAll();
-        rents.forEach((rent -> new Thread(() -> {
-            pool.jsonSet("rents:" + rent.getUuid(), gson.toJson(rent));
-        }).start()));
+        rents.forEach(rent ->
+                pool.jsonSet("rents:" + rent.getUuid(), gson.toJson(rent))
+        );
         return rents;
     }
 

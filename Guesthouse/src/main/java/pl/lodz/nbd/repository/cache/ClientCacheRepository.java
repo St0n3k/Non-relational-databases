@@ -10,6 +10,7 @@ import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisPooled;
+import redis.clients.jedis.json.Path;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,26 +31,23 @@ public class ClientCacheRepository extends ClientRepository {
     @Override
     public Optional<Client> add(Client client) {
         Optional<Client> optionalClient = super.add(client);
-        Thread thread = new Thread(() -> {
-            pool.jsonSet("clients:" + client.getPersonalId(), gson.toJson(client));
-            pool.expire("clients:" + client.getPersonalId(), 60);
-        });
-        thread.start();
+
+        pool.jsonSet("clients:" + client.getPersonalId(), gson.toJson(client));
+        pool.expire("clients:" + client.getPersonalId(), 60);
+
         return optionalClient;
     }
 
     @Override
     public List<Client> getAll() {
         List<Client> clients = super.getAll();
-        Thread thread = new Thread(() -> clients.forEach((client -> pool.jsonSet("clients:" + client.getPersonalId(), gson.toJson(client)))));
-        thread.start();
+        clients.forEach((client -> pool.jsonSet("clients:" + client.getPersonalId(), gson.toJson(client))));
         return clients;
     }
 
     @Override
     public void remove(Client client) {
-        Thread thread = new Thread(() -> pool.jsonDel("clients:" + client.getPersonalId()));
-        thread.start();
+        pool.jsonDel("clients:" + client.getPersonalId());
         super.remove(client);
     }
 
@@ -61,7 +59,8 @@ public class ClientCacheRepository extends ClientRepository {
     @Override
     public Optional<Client> getClientByPersonalId(String personalId) {
         //TODO ftSearch?
-        Client client = pool.jsonGet("clients:" + personalId, Client.class);
+        String json = pool.jsonGetAsPlainString("clients:" + personalId, Path.ROOT_PATH);
+        Client client = gson.fromJson(json, Client.class);
 
         if (client != null) {
             System.out.println("Got client from cache!");
@@ -74,8 +73,7 @@ public class ClientCacheRepository extends ClientRepository {
     public boolean update(Client client) {
         boolean successful = super.update(client);
         if (successful) {
-            Thread thread = new Thread(() -> pool.jsonSet("clients:" + client.getPersonalId(), gson.toJson(client)));
-            thread.start();
+            pool.jsonSet("clients:" + client.getPersonalId(), gson.toJson(client));
         }
         return successful;
     }
