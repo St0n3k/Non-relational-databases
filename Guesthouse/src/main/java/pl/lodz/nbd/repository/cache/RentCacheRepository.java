@@ -5,13 +5,11 @@ import com.google.gson.GsonBuilder;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import pl.lodz.nbd.common.ClientTypeInstanceCreator;
+import pl.lodz.nbd.model.Client;
 import pl.lodz.nbd.model.ClientTypes.ClientType;
 import pl.lodz.nbd.model.Rent;
 import pl.lodz.nbd.repository.impl.RentRepository;
-import redis.clients.jedis.DefaultJedisClientConfig;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.JedisPooled;
+import redis.clients.jedis.*;
 import redis.clients.jedis.json.Path;
 
 import java.util.Optional;
@@ -20,8 +18,10 @@ import java.util.UUID;
 public class RentCacheRepository extends RentRepository {
 
     private JedisPooled pool;
+    private Jedis jedis;
     private Gson gson;
 
+    private long lastCheck;
     private boolean connected;
 
     public RentCacheRepository() {
@@ -34,6 +34,7 @@ public class RentCacheRepository extends RentRepository {
             int port = config.getValue("jedis.port", Integer.class);
 
             JedisClientConfig clientConfig = DefaultJedisClientConfig.builder().socketTimeoutMillis(100).build();
+            jedis = new Jedis(new HostAndPort(host, port), clientConfig);
             pool = new JedisPooled(new HostAndPort(host, port), clientConfig);
             pool.set("ping", "ping");
             connected = true;
@@ -42,10 +43,35 @@ public class RentCacheRepository extends RentRepository {
         }
     }
 
+    private boolean healthcheck(){
+        if(System.currentTimeMillis() - lastCheck < 60000){
+            return false;
+        }
+        try {
+            pool.set("ping", "ping");
+        } catch (Exception e) {
+            return false;
+        }
+        if(!connected){
+            jedis.flushDB();
+            connected = true;
+        }
+        return true;
+    }
+
     @Override
     public Optional<Rent> add(Rent rent) {
         if (connected) {
-            addToCache(rent);
+            try{
+                addToCache(rent);
+            } catch (Exception e) {
+                jedisConnectionExceptionHandler(e);
+                add(rent);
+            }
+        } else {
+            if(healthcheck()){
+                add(rent);
+            }
         }
         return super.add(rent);
     }
@@ -53,7 +79,16 @@ public class RentCacheRepository extends RentRepository {
     @Override
     public void remove(Rent rent) {
         if (connected) {
-            pool.jsonDel("rents:" + rent.getUuid());
+            try{
+                pool.jsonDel("rents:" + rent.getUuid());
+            } catch (Exception e) {
+                jedisConnectionExceptionHandler(e);
+                remove(rent);
+            }
+        } else {
+            if(healthcheck()){
+                remove(rent);
+            }
         }
         super.remove(rent);
     }
@@ -61,16 +96,30 @@ public class RentCacheRepository extends RentRepository {
     @Override
     public Optional<Rent> getById(UUID id) {
         if (connected) {
-            String json = pool.jsonGetAsPlainString("rents:" + id, Path.ROOT_PATH);
-            Rent rent = gson.fromJson(json, Rent.class);
+            Rent rent = null;
+            try{
+                String json = pool.jsonGetAsPlainString("rents:" + id, Path.ROOT_PATH);
+                rent = gson.fromJson(json, Rent.class);
+            } catch (Exception e) {
+                jedisConnectionExceptionHandler(e);
+                getById(id);
+            }
 
             if (rent != null) {
                 System.out.println("Got rent from cache!");
                 return Optional.of(rent);
             } else {
                Optional<Rent> optionalRent = super.getById(id);
-               optionalRent.ifPresent(this::addToCache);
+                try{
+                    optionalRent.ifPresent(this::addToCache);
+                } catch (Exception e) {
+                    jedisConnectionExceptionHandler(e);
+                }
                return optionalRent;
+            }
+        } else {
+            if(healthcheck()){
+                getById(id);
             }
         }
         return super.getById(id);
@@ -81,7 +130,16 @@ public class RentCacheRepository extends RentRepository {
     public boolean update(Rent rent) {
         boolean successful = super.update(rent);
         if (connected && successful) {
-            pool.jsonSet("rents:" + rent.getUuid(), gson.toJson(rent));
+            try{
+                pool.jsonSet("rents:" + rent.getUuid(), gson.toJson(rent));
+            } catch (Exception e) {
+                jedisConnectionExceptionHandler(e);
+                update(rent);
+            }
+        } else if(!connected && successful){
+            if(healthcheck()){
+                update(rent);
+            }
         }
         return successful;
     }
@@ -89,5 +147,11 @@ public class RentCacheRepository extends RentRepository {
     private void addToCache(Rent rent){
         pool.jsonSet("rents:" + rent.getUuid(), gson.toJson(rent));
         pool.expire("rents:" + rent.getUuid(), 60);
+    }
+
+    private void jedisConnectionExceptionHandler(Exception e){
+        e.printStackTrace();
+        connected = false;
+        lastCheck = System.currentTimeMillis();
     }
 }
