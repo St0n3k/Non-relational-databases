@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ClientTest {
 
-    private static final ClientRepository clientRepository = RepositoryCreator.getClientRepository();
+    private static final ClientRepository clientRepository = RepositoryCreator.getClientCacheRepository();
     private static final ClientTypeRepository clientTypeRepository = RepositoryCreator.getClientTypeRepository();
     private static final ClientManager clientManager = new ClientManager(clientRepository, clientTypeRepository);
 
