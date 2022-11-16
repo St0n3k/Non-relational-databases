@@ -24,7 +24,6 @@ public class RentCacheRepository extends RentRepository {
 
     private boolean connected;
 
-
     public RentCacheRepository() {
         try {
             gson = new GsonBuilder().registerTypeAdapter(ClientType.class, new ClientTypeInstanceCreator()).create();
@@ -41,8 +40,7 @@ public class RentCacheRepository extends RentRepository {
     @Override
     public Optional<Rent> add(Rent rent) {
         if (connected) {
-            pool.jsonSet("rents:" + rent.getUuid(), gson.toJson(rent));
-            pool.expire("rents:" + rent.getUuid(), 60);
+            addToCache(rent);
         }
         return super.add(rent);
     }
@@ -64,25 +62,15 @@ public class RentCacheRepository extends RentRepository {
             if (rent != null) {
                 System.out.println("Got rent from cache!");
                 return Optional.of(rent);
+            } else {
+               Optional<Rent> optionalRent = super.getById(id);
+               optionalRent.ifPresent(this::addToCache);
+               return optionalRent;
             }
         }
         return super.getById(id);
     }
 
-    @Override
-    public List<Rent> getAll() {
-        return super.getAll();
-    }
-
-    @Override
-    public List<Rent> getByRoomNumber(int roomNumber) {
-        return super.getByRoomNumber(roomNumber);
-    }
-
-    @Override
-    public List<Rent> getByClientPersonalId(String personalId) {
-        return super.getByClientPersonalId(personalId);
-    }
 
     @Override
     public boolean update(Rent rent) {
@@ -93,13 +81,8 @@ public class RentCacheRepository extends RentRepository {
         return successful;
     }
 
-    @Override
-    public boolean isColliding(LocalDateTime beginDate, LocalDateTime endDate, int roomNumber) {
-        return super.isColliding(beginDate, endDate, roomNumber);
-    }
-
-    @Override
-    public boolean updateIsBeingRented(int roomNumber, boolean increment) {
-        return super.updateIsBeingRented(roomNumber, increment);
+    private void addToCache(Rent rent){
+        pool.jsonSet("rents:" + rent.getUuid(), gson.toJson(rent));
+        pool.expire("rents:" + rent.getUuid(), 60);
     }
 }

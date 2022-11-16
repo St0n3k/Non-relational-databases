@@ -44,8 +44,7 @@ public class ClientCacheRepository extends ClientRepository {
         Optional<Client> optionalClient = super.add(client);
 
         if (connected && optionalClient.isPresent()) {
-            pool.jsonSet("clients:" + client.getPersonalId(), gson.toJson(client));
-            pool.expire("clients:" + client.getPersonalId(), 60);
+            addToCache(client);
         }
         return optionalClient;
     }
@@ -75,8 +74,11 @@ public class ClientCacheRepository extends ClientRepository {
             Client client = gson.fromJson(json, Client.class);
 
             if (client != null) {
-                System.out.println("Got client from cache!");
+//                System.out.println("Got client from cache!");
                 return Optional.of(client);
+            } else {
+                Optional<Client> optionalClient = super.getClientByPersonalId(personalId);
+                optionalClient.ifPresent(this::addToCache);
             }
         }
         return super.getClientByPersonalId(personalId);
@@ -90,5 +92,10 @@ public class ClientCacheRepository extends ClientRepository {
             pool.jsonSet("clients:" + client.getPersonalId(), gson.toJson(client));
         }
         return successful;
+    }
+
+    private void addToCache(Client client){
+        pool.jsonSet("clients:" + client.getPersonalId(), gson.toJson(client));
+        pool.expire("clients:" + client.getPersonalId(), 60);
     }
 }

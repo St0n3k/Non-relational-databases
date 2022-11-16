@@ -10,13 +10,19 @@ import pl.lodz.nbd.repository.impl.RoomRepository;
 
 public class RepositoryCreator {
 
-    private static final ClientRepository clientRepository = new ClientCacheRepository();
+    private static final ClientRepository clientRepository = new ClientRepository();
+    private static final ClientRepository clientCacheRepository = new ClientCacheRepository();
     private static final ClientTypeRepository clientTypeRepository = new ClientTypeRepository();
     private static final RoomRepository roomRepository = new RoomRepository();
-    private static final RentRepository rentRepository = new RentCacheRepository();
+    private static final RentRepository rentRepository = new RentRepository();
+    private static final RentRepository rentCacheRepository = new RentCacheRepository();
 
     public static ClientRepository getClientRepository() {
         return clientRepository;
+    }
+
+    public static ClientRepository getClientCacheRepository() {
+        return clientCacheRepository;
     }
 
     public static ClientTypeRepository getClientTypeRepository() {
@@ -29,6 +35,10 @@ public class RepositoryCreator {
 
     public static RentRepository getRentRepository() {
         return rentRepository;
+    }
+
+    public static RentRepository getRentCacheRepository() {
+        return rentCacheRepository;
     }
 
 }
