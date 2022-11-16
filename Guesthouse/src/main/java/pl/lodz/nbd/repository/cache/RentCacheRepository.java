@@ -2,6 +2,8 @@ package pl.lodz.nbd.repository.cache;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 import pl.lodz.nbd.common.ClientTypeInstanceCreator;
 import pl.lodz.nbd.model.ClientTypes.ClientType;
 import pl.lodz.nbd.model.Rent;
@@ -12,8 +14,6 @@ import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.json.Path;
 
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -28,8 +28,13 @@ public class RentCacheRepository extends RentRepository {
         try {
             gson = new GsonBuilder().registerTypeAdapter(ClientType.class, new ClientTypeInstanceCreator()).create();
 
+            Config config = ConfigProvider.getConfig();
+
+            String host = config.getValue("jedis.host", String.class);
+            int port = config.getValue("jedis.port", Integer.class);
+
             JedisClientConfig clientConfig = DefaultJedisClientConfig.builder().socketTimeoutMillis(100).build();
-            pool = new JedisPooled(new HostAndPort("localhost", 6379), clientConfig);
+            pool = new JedisPooled(new HostAndPort(host, port), clientConfig);
             pool.set("ping", "ping");
             connected = true;
         } catch (Exception e) {

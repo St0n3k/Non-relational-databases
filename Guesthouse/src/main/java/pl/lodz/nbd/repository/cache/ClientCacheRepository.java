@@ -2,6 +2,8 @@ package pl.lodz.nbd.repository.cache;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 import pl.lodz.nbd.common.ClientTypeInstanceCreator;
 import pl.lodz.nbd.model.Client;
 import pl.lodz.nbd.model.ClientTypes.ClientType;
@@ -29,8 +31,13 @@ public class ClientCacheRepository extends ClientRepository {
         try {
             gson = new GsonBuilder().registerTypeAdapter(ClientType.class, new ClientTypeInstanceCreator()).create();
 
+            Config config = ConfigProvider.getConfig();
+
+            String host = config.getValue("jedis.host", String.class);
+            int port = config.getValue("jedis.port", Integer.class);
+
             JedisClientConfig clientConfig = DefaultJedisClientConfig.builder().socketTimeoutMillis(1000).build();
-            pool = new JedisPooled(new HostAndPort("localhost", 6379), clientConfig);
+            pool = new JedisPooled(new HostAndPort(host, port), clientConfig);
             pool.set("ping", "ping");
             connected = true;
         } catch (JedisConnectionException e) {
