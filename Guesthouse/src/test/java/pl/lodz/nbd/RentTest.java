@@ -32,7 +32,7 @@ public class RentTest {
 
     private static final RoomRepository roomRepository = RepositoryCreator.getRoomRepository();
     private static final RentRepository rentRepository = RepositoryCreator.getRentCacheRepository();
-    private static final ClientRepository clientRepository = RepositoryCreator.getClientCacheRepository();
+    private static final ClientRepository clientRepository = RepositoryCreator.getClientRepository();
     private static final ClientTypeRepository clientTypeRepository = RepositoryCreator.getClientTypeRepository();
     private static final ClientManager clientManager = new ClientManager(clientRepository, clientTypeRepository);
     private static final RoomManager roomManager = new RoomManager(roomRepository);
