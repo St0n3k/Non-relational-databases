@@ -61,6 +61,10 @@ public class RentCacheRepository extends RentRepository {
 
     @Override
     public Optional<Rent> add(Rent rent) {
+        Optional<Rent> optionalRent = super.add(rent);
+        if(optionalRent.isEmpty()){
+            return optionalRent;
+        }
         if (connected) {
             try{
                 addToCache(rent);
@@ -73,7 +77,7 @@ public class RentCacheRepository extends RentRepository {
                 add(rent);
             }
         }
-        return super.add(rent);
+        return optionalRent;
     }
 
     @Override
