@@ -1,48 +1,55 @@
 package pl.lodz.nbd.model;
 
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import org.bson.codecs.pojo.annotations.BsonProperty;
-
-import java.util.UUID;
+import com.datastax.oss.driver.api.mapper.annotations.CqlName;
+import com.datastax.oss.driver.api.mapper.annotations.Entity;
+import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
+import com.datastax.oss.driver.api.mapper.annotations.PropertyStrategy;
 
 
-@Data
-@EqualsAndHashCode(callSuper = true)
-@NoArgsConstructor
-public class Room extends AbstractEntity {
+@Entity(defaultKeyspace = "guesthouse")
+@CqlName("rooms")
+@PropertyStrategy(mutable = false)
+public class Room {
 
-    @BsonProperty("number")
+    @PartitionKey
+    @CqlName("number")
     private int roomNumber;
 
-    @BsonProperty("price")
     private double price;
 
-    @BsonProperty("size")
     private int size;
 
-    @BsonProperty("is_being_rented")
-    private int isBeingRented = 0;
-
-
-    public Room(@BsonProperty("_id") UUID id,
-                @BsonProperty("number") int roomNumber,
-                @BsonProperty("price") double price,
-                @BsonProperty("size") int size,
-                @BsonProperty("is_being_rented") int isBeingRented) {
-        super(id);
+    public Room(int roomNumber, double price, int size) {
         this.roomNumber = roomNumber;
         this.price = price;
         this.size = size;
-        this.isBeingRented = isBeingRented;
     }
 
-    public Room(int roomNumber, double price, int size) {
-        super(UUID.randomUUID());
+    public Room() {
+    }
+
+    public int getRoomNumber() {
+        return roomNumber;
+    }
+
+    public void setRoomNumber(int roomNumber) {
         this.roomNumber = roomNumber;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
         this.price = price;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public void setSize(int size) {
         this.size = size;
     }
 }

@@ -2,7 +2,6 @@ package pl.lodz.nbd.model;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.bson.codecs.pojo.annotations.BsonProperty;
 
 import java.util.UUID;
 
@@ -11,7 +10,6 @@ import java.util.UUID;
 @NoArgsConstructor
 public abstract class AbstractEntity {
 
-    @BsonProperty("_id")
     private UUID uuid;
 
 
