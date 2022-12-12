@@ -1,43 +1,32 @@
 package pl.lodz.nbd.model;
 
 
+import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
+import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 
 @Data
 @NoArgsConstructor
-public class Rent extends AbstractEntity {
+public class Rent {
 
+    @ClusteringColumn
     private LocalDateTime beginTime;
+
+    @ClusteringColumn
     private LocalDateTime endTime;
     private boolean board;
     private double finalCost;
+
+    @PartitionKey
     private Client client;
     private Room room;
 
 
-    public Rent(UUID uuid,
-                LocalDateTime beginTime,
-                LocalDateTime endTime,
-                boolean board,
-                double finalCost,
-                Client client,
-                Room room) {
-        super(uuid);
-        this.beginTime = beginTime;
-        this.endTime = endTime;
-        this.board = board;
-        this.finalCost = finalCost;
-        this.client = client;
-        this.room = room;
-    }
-
     public Rent(LocalDateTime beginTime, LocalDateTime endTime, boolean board, double finalCost, Client client, Room room) {
-        super(UUID.randomUUID());
         if (beginTime.isAfter(endTime)) throw new RuntimeException("Wrong chronological order");
         this.beginTime = beginTime;
         this.endTime = endTime;

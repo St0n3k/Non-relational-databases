@@ -1,109 +1,76 @@
 package pl.lodz.nbd;
 
 import org.junit.jupiter.api.Test;
+import pl.lodz.nbd.common.RepositoryCreator;
 import pl.lodz.nbd.model.Room;
 import pl.lodz.nbd.repository.RoomRepository;
 
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 public class RoomTest {
 
-    private RoomRepository roomRepository = new RoomRepository();
+    private final RoomRepository roomRepository = RepositoryCreator.getRoomRepository();
+
 
     @Test
-    void test() {
-        Room room = new Room(1, 2, 3);
+    void getAllRoomsTest() {
+        Room room = Room.builder().roomNumber(1).size(2).price(3).build();
         roomRepository.addRoom(room);
+
+        List<Room> rooms = roomRepository.getAll();
+        assertNotNull(rooms);
+        assertTrue(rooms.size() > 0);
     }
 
-//    private static final RoomRepository roomRepository = RepositoryCreator.getRoomRepository();
-//
-//    private static final RoomManager roomManager = new RoomManager(roomRepository);
-//
-//
-//    @Test
-//    void roomMapperTest() {
-//        Room room1 = new Room(9, 9, 9);
-//        roomRepository.add(room1);
-//        Optional<Room> optionalRoom = roomRepository.getById(room1.getUuid());
-//        assertTrue(optionalRoom.isPresent());
-//        Room room2 = optionalRoom.get();
-//        assertEquals(room1, room2);
-//    }
-//
-//    @Test
-//    void getAllRoomsTest() {
-//        roomManager.addRoom(1500.0, 5, 987);
-//
-//        List<Room> rooms = roomManager.getAllRooms();
-//        assertNotNull(rooms);
-//        assertTrue(rooms.size() > 0);
-//    }
-//
-//    @Test
-//    void addRoomTest() {
-//        roomManager.addRoom(100.0, 2, 100);
-//        Optional<Room> optionalRoom = (roomManager.addRoom(200.0, 3, 101));
-//        assertTrue(optionalRoom.isPresent());
-//
-//        assertTrue(roomManager.addRoom(1000.0, 5, 100).isEmpty());
-//
-//        //Check if getRoomByNumber works properly
-//        assertTrue(roomManager.getByRoomNumber(100).isPresent());
-//        assertTrue(roomManager.getByRoomNumber(101).isPresent());
-//        assertTrue(roomManager.getByRoomNumber(300).isEmpty());
-//    }
-//
-//
-//    @Test
-//    void updateRoomTest() {
-//        roomManager.addRoom(300.0, 3, 1040);
-//        Optional<Room> optionalRoom = roomManager.getByRoomNumber(1040);
-//        assertTrue(optionalRoom.isPresent());
-//        Room room = optionalRoom.get();
-//        assertEquals(3, room.getSize());
-//        room.setSize(10);
-//        roomManager.updateRoom(room);
-//        optionalRoom = roomManager.getByRoomNumber(1040);
-//        assertTrue(optionalRoom.isPresent());
-//        Room newRoom = optionalRoom.get();
-//        assertEquals(10, newRoom.getSize());
-//
-//        roomManager.addRoom(600.0, 14, 900);
-//        optionalRoom = roomManager.getByRoomNumber(900);
-//        assertTrue(optionalRoom.isPresent());
-//        Room roomTwo = optionalRoom.get();
-//        roomTwo.setRoomNumber(1040);
-//        roomTwo.setSize(3);
-//
-//        assertTrue(roomManager.updateRoom(roomTwo));
-//        optionalRoom = roomManager.getById(roomTwo.getUuid());
-//        assertTrue(optionalRoom.isPresent());
-//        Room notChangedRoomNumber = optionalRoom.get();
-//        assertEquals(notChangedRoomNumber.getRoomNumber(), 900); //room number didn't change due to conflict with other room
-//        assertEquals(notChangedRoomNumber.getSize(), 3); //size changed
-//        assertEquals(notChangedRoomNumber.getUuid(), roomTwo.getUuid()); //proof that it is still the same room
-//        assertNotNull(roomManager.getByRoomNumber(900)); //room number is still 900
-//
-//        roomTwo.setRoomNumber(1041);
-//        roomTwo.setPrice(999.0);
-//        assertNotNull(roomManager.updateRoom(roomTwo));
-//        optionalRoom = roomManager.getById(roomTwo.getUuid());
-//        assertTrue(optionalRoom.isPresent());
-//
-//        Room updatedRoom = optionalRoom.get();
-//        assertEquals(updatedRoom.getRoomNumber(), 1041); //room number changed to 1041
-//        assertEquals(updatedRoom.getSize(), 3);
-//        assertEquals(updatedRoom.getPrice(), 999.0);
-//        assertEquals(updatedRoom.getUuid(), roomTwo.getUuid()); //proof that it is still the same room
-//    }
-//
-//    @Test
-//    void removeRoomTest() {
-//        roomManager.addRoom(500, 500, 500);
-//        Optional<Room> optionalRoom = roomManager.getByRoomNumber(500);
-//        assertTrue(optionalRoom.isPresent());
-//        Room room = optionalRoom.get();
-//        roomManager.removeRoom(room);
-//        assertTrue(roomManager.getByRoomNumber(500).isEmpty());
-//    }
+    @Test
+    void addRoomTest() {
+        Room room = Room.builder().roomNumber(2).size(3).price(4).build();
+        assertTrue(roomRepository.addRoom(room)); //should add room
 
+        Optional<Room> optionalRoom = roomRepository.getByRoomNumber(2);
+        assertTrue(optionalRoom.isPresent());
+
+        assertEquals(room, optionalRoom.get());
+
+        room = Room.builder().roomNumber(2).size(30).price(40).build();
+        assertFalse(roomRepository.addRoom(room)); //should not add room with same room number
+    }
+
+
+    @Test
+    void updateRoomTest() {
+        Room room = Room.builder().roomNumber(3).size(4).price(5).build();
+        roomRepository.addRoom(room);
+
+        Optional<Room> optionalRoom = roomRepository.getByRoomNumber(3);
+        assertTrue(optionalRoom.isPresent());
+
+        room = optionalRoom.get();
+        assertEquals(5, room.getPrice());
+        room.setPrice(1000);
+        roomRepository.update(room);
+
+        optionalRoom = roomRepository.getByRoomNumber(3);
+        assertTrue(optionalRoom.isPresent());
+
+        room = optionalRoom.get();
+        assertEquals(1000, room.getPrice());
+    }
+
+    @Test
+    void removeRoomTest() {
+        Room room = Room.builder().roomNumber(4).size(1).price(2).build();
+        roomRepository.addRoom(room);
+
+        Optional<Room> optionalRoom = roomRepository.getByRoomNumber(4);
+        assertTrue(optionalRoom.isPresent());
+
+        roomRepository.remove(room);
+
+        optionalRoom = roomRepository.getByRoomNumber(4);
+        assertTrue(optionalRoom.isEmpty());
+    }
 }

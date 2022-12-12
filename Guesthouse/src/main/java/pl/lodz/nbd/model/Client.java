@@ -5,13 +5,11 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import pl.lodz.nbd.model.ClientTypes.ClientType;
 
-import java.util.UUID;
-
 
 @Data
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode
 @NoArgsConstructor
-public class Client extends AbstractEntity {
+public class Client {
 
     private String firstName;
     private String lastName;
@@ -19,23 +17,11 @@ public class Client extends AbstractEntity {
     private ClientType clientType;
     private Address address;
 
-
-    public Client(UUID id,
-                  String firstName,
+    public Client(String firstName,
                   String lastName,
                   String personalId,
                   Address address,
                   ClientType clientType) {
-        super(id);
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.personalId = personalId;
-        this.address = address;
-        this.clientType = clientType;
-    }
-
-    public Client(String firstName, String lastName, String personalId, Address address, ClientType clientType) {
-        super(UUID.randomUUID());
         this.firstName = firstName;
         this.lastName = lastName;
         this.personalId = personalId;
