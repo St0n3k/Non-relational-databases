@@ -18,7 +18,6 @@ import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.dropTable;
 
 public class RoomRepository {
 
-
     private final RoomDao roomDao;
 
     public RoomRepository(CqlSession session) {

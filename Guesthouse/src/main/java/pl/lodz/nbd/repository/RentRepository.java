@@ -1,100 +1,101 @@
 package pl.lodz.nbd.repository;
 
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.type.DataTypes;
+import pl.lodz.nbd.common.GuesthouseFinals;
+import pl.lodz.nbd.dao.RentDao;
+import pl.lodz.nbd.mapper.RentMapper;
+import pl.lodz.nbd.mapper.RentMapperBuilder;
+import pl.lodz.nbd.model.Rent;
+
+import java.time.LocalDate;
+import java.util.List;
+
+import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.createTable;
+import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.dropTable;
+
 public class RentRepository {
 
-//    MongoCollection<Rent> rentCollection = mongoDatabase.getCollection("rents", Rent.class);
-//    MongoCollection<Room> roomCollection = mongoDatabase.getCollection("rooms", Room.class);
-//
-//    public RentRepository() {
-//        rentCollection.drop();
-//        rentCollection = mongoDatabase.getCollection("rents", Rent.class);
-//    }
-//
-//    public Optional<Rent> add(Rent rent) {
-//
-//        int roomNumber = rent.getRoom().getRoomNumber();
-//
-//        if (!updateIsBeingRented(roomNumber, true)) {
-//            return add(rent);
-//        }
-//        boolean colliding = isColliding(
-//                rent.getBeginTime(),
-//                rent.getEndTime(),
-//                roomNumber);
-//
-//        if (colliding) {
-//            updateIsBeingRented(roomNumber, false);
-//            return Optional.empty();
-//        }
-//        rentCollection.insertOne(rent);
-//        updateIsBeingRented(roomNumber, false);
-//
-//        return Optional.of(rent);
-//    }
-//
-//    public void remove(Rent rent) {
-//        Bson filter = Filters.eq("_id", rent.getUuid());
-//        rentCollection.findOneAndDelete(filter);
-//    }
-//
-//
-//    public Optional<Rent> getById(UUID id) {
-//        Bson filter = Filters.eq("_id", id);
-//        return Optional.ofNullable(rentCollection.find(filter).first());
-//    }
-//
-//    public List<Rent> getAll() {
-//        return rentCollection.find().into(new ArrayList<>());
-//    }
-//
-//    public List<Rent> getByRoomNumber(int roomNumber) {
-//        Bson filter = Filters.eq("room.number", roomNumber);
-//        return rentCollection.find(filter).into(new ArrayList<>());
-//    }
-//
-//    public List<Rent> getByClientPersonalId(String personalId) {
-//        Bson filter = Filters.eq("client.personal_id", personalId);
-//        return rentCollection.find(filter).into(new ArrayList<>());
-//    }
-//
-//
-//    public boolean update(Rent rent) {
-//
-//        Bson filter = Filters.eq("_id", rent.getUuid());
-//
-//        Bson updateBoard = Updates.set("board", rent.isBoard());
-//        Bson updateCost = Updates.set("final_cost", rent.getFinalCost());
-//        Bson update = Updates.combine(updateBoard, updateCost);
-//
-//
-//        return rentCollection.updateOne(filter, update).wasAcknowledged();
-//    }
-//
-//    public boolean isColliding(LocalDateTime beginDate, LocalDateTime endDate, int roomNumber) {
-//
-//        Bson filterRoomNumber = Filters.eq("room.number", roomNumber);
-//
-//        Bson filterBeginDateBetweenExistingLeft = Filters.gte("begin_time", beginDate);
-//        Bson filterBeginDateBetweenExistingRight = Filters.lte("begin_time", endDate);
-//
-//        Bson filterEndDateBetweenExistingRight = Filters.gte("end_time", beginDate);
-//        Bson filterEndDateBetweenExistingLeft = Filters.lte("end_time", endDate);
-//
-//        Bson filterDateContainingExistingLeft = Filters.lte("begin_time", beginDate);
-//        Bson filterDateContainingExistingRight = Filters.gte("end_time", endDate);
-//
-//        Bson dateFilter1 = Filters.and(filterBeginDateBetweenExistingLeft, filterBeginDateBetweenExistingRight);
-//        Bson dateFilter2 = Filters.and(filterEndDateBetweenExistingLeft, filterEndDateBetweenExistingRight);
-//        Bson dateFilter3 = Filters.and(filterDateContainingExistingLeft, filterDateContainingExistingRight);
-//
-//        Bson dateFilters = Filters.or(dateFilter1, dateFilter2, dateFilter3);
-//
-//        Bson finalFilter = Filters.and(filterRoomNumber, dateFilters);
-//
-//        List<Rent> rentsColliding = rentCollection.find(finalFilter).into(new ArrayList<>());
-//
-//        return !rentsColliding.isEmpty();
-//    }
+    private final RentDao rentDao;
+
+    public RentRepository(CqlSession session) {
+        session.execute(dropTable(GuesthouseFinals.RENTS_BY_ROOM).ifExists().build());
+        session.execute(dropTable(GuesthouseFinals.RENTS_BY_CLIENT).ifExists().build());
+        session.execute(createRentByRoomTableStatement());
+        session.execute(createRentByClientTableStatement());
+
+        RentMapper rentMapper = new RentMapperBuilder(session).build();
+        rentDao = rentMapper.rentDao();
+    }
+
+    private SimpleStatement createRentByRoomTableStatement() {
+        return createTable(GuesthouseFinals.RENTS_BY_ROOM)
+                .ifNotExists()
+                .withPartitionKey(GuesthouseFinals.ROOM_NUMBER, DataTypes.INT)
+                .withClusteringColumn(GuesthouseFinals.RENT_BEGIN_DATE, DataTypes.DATE)
+                .withClusteringColumn(GuesthouseFinals.RENT_END_DATE, DataTypes.DATE)
+                .withColumn(GuesthouseFinals.CLIENT_PERSONAL_ID, DataTypes.TEXT)
+                .withColumn(GuesthouseFinals.RENT_COST, DataTypes.DOUBLE)
+                .withColumn(GuesthouseFinals.RENT_BOARD, DataTypes.BOOLEAN)
+                .build();
+    }
+
+    private SimpleStatement createRentByClientTableStatement() {
+        return createTable(GuesthouseFinals.RENTS_BY_CLIENT)
+                .ifNotExists()
+                .withPartitionKey(GuesthouseFinals.CLIENT_PERSONAL_ID, DataTypes.TEXT)
+                .withClusteringColumn(GuesthouseFinals.RENT_BEGIN_DATE, DataTypes.DATE)
+                .withClusteringColumn(GuesthouseFinals.RENT_END_DATE, DataTypes.DATE)
+                .withColumn(GuesthouseFinals.ROOM_NUMBER, DataTypes.INT)
+                .withColumn(GuesthouseFinals.RENT_COST, DataTypes.DOUBLE)
+                .withColumn(GuesthouseFinals.RENT_BOARD, DataTypes.BOOLEAN)
+                .build();
+    }
+
+
+    public boolean add(Rent rent) {
+
+        if (isColliding(rent.getBeginTime(), rent.getEndTime(), rent.getRoom().getRoomNumber())) {
+            return false;
+        }
+        return rentDao.create(rent);
+    }
+
+    //
+    public void remove(Rent rent) {
+        rentDao.remove(rent);
+    }
+
+
+    public List<Rent> getAll() {
+        return rentDao.findAll();
+    }
+
+    public List<Rent> getByRoomNumber(int roomNumber) {
+        return rentDao.findByRoomNumber(roomNumber);
+    }
+
+    public List<Rent> getByClientPersonalId(String personalId) {
+        return rentDao.findByClientPersonalId(personalId);
+    }
+
+
+    public void update(Rent rent) {
+        rentDao.update(rent);
+    }
+
+    public boolean isColliding(LocalDate beginDate, LocalDate endDate, int roomNumber) {
+
+        List<Rent> rents = getByRoomNumber(roomNumber);
+        return rents.stream().anyMatch((rent ->
+                        (rent.getBeginTime().isAfter(beginDate) && rent.getBeginTime().isBefore(endDate)) ||
+                                (rent.getEndTime().isAfter(beginDate) && rent.getEndTime().isBefore(endDate)) ||
+                                (rent.getBeginTime().isBefore(beginDate) && rent.getEndTime().isAfter(endDate)) ||
+                                (rent.getBeginTime().isEqual(beginDate) || rent.getEndTime().isEqual(endDate))
+                )
+        );
+    }
 //
 //    public boolean updateIsBeingRented(int roomNumber, boolean increment) {
 //        Bson filter = Filters.eq("number", roomNumber);

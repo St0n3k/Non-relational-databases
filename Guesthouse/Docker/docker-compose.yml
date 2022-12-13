@@ -21,7 +21,7 @@ services:
       - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
       - CASSANDRA_USER=cassandra
       - CASSANDRA_PASSWORD=cassandra
-      - MAX_HEAP_SIZE=1G
+      - MAX_HEAP_SIZE=2G
       - HEAP_NEWSIZE=200M
   cassandra2:
     image: docker.io/bitnami/cassandra:latest
@@ -43,7 +43,7 @@ services:
       - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
       - CASSANDRA_USER=cassandra
       - CASSANDRA_PASSWORD=cassandra
-      - MAX_HEAP_SIZE=1G
+      - MAX_HEAP_SIZE=2G
       - HEAP_NEWSIZE=200M
 
 volumes:

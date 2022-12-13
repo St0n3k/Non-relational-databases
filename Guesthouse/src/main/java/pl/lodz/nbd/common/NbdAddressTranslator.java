@@ -15,9 +15,8 @@ public class NbdAddressTranslator implements AddressTranslator {
         String hostAddress = address.getAddress().getHostAddress();
         String hostName = address.getHostName();
         return switch (hostAddress) {
-            case "172.21.0.2" -> new InetSocketAddress("cassandra1", 9042);
-            case "172.21.0.3" -> new InetSocketAddress("cassandra2", 9043);
-            case "172.21.0.4" -> new InetSocketAddress("cassandra3", 9043);
+            case "172.21.0.3" -> new InetSocketAddress("cassandra1", 9042);
+            case "172.21.0.2" -> new InetSocketAddress("cassandra2", 9043);
             default -> throw new RuntimeException("Wrong addesss");
         };
     }

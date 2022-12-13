@@ -19,5 +19,11 @@ public class GuesthouseFinals {
     public static final CqlIdentifier CLIENT_LAST_NAME = CqlIdentifier.fromCql("last_name");
     public static final CqlIdentifier CLIENT_TYPE = CqlIdentifier.fromCql("client_type");
 
+    public static final CqlIdentifier RENTS_BY_ROOM = CqlIdentifier.fromCql("rents_by_room");
+    public static final CqlIdentifier RENTS_BY_CLIENT = CqlIdentifier.fromCql("rents_by_client");
+    public static final CqlIdentifier RENT_BEGIN_DATE = CqlIdentifier.fromCql("begin_date");
+    public static final CqlIdentifier RENT_END_DATE = CqlIdentifier.fromCql("end_date");
+    public static final CqlIdentifier RENT_BOARD = CqlIdentifier.fromCql("board");
+    public static final CqlIdentifier RENT_COST = CqlIdentifier.fromCql("cost");
 
 }

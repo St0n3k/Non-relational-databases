@@ -1,13 +1,14 @@
 package pl.lodz.nbd;
 
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
+import com.datastax.oss.driver.api.core.config.DriverConfigLoader;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.querybuilder.schema.CreateKeyspace;
 import pl.lodz.nbd.common.GuesthouseFinals;
 
 import java.net.InetSocketAddress;
-import java.util.HashMap;
-import java.util.Map;
+import java.time.Duration;
 
 import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.createKeyspace;
 
@@ -18,6 +19,11 @@ public class Init {
                 .addContactPoint(new InetSocketAddress("localhost", 9043))
                 .withLocalDatacenter("dc1")
                 .withAuthCredentials("cassandra", "cassandra")
+                .withConfigLoader(DriverConfigLoader.programmaticBuilder()
+                        .withDuration(DefaultDriverOption.METADATA_SCHEMA_REQUEST_TIMEOUT, Duration.ofMillis(60000))
+                        .withDuration(DefaultDriverOption.CONNECTION_INIT_QUERY_TIMEOUT, Duration.ofMillis(60000))
+                        .withDuration(DefaultDriverOption.REQUEST_TIMEOUT, Duration.ofMillis(15000))
+                        .build())
                 .build()) {
             session.execute(createKeyspaceStatement());
         }

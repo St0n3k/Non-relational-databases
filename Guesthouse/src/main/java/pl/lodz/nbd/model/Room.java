@@ -36,20 +36,20 @@ public class Room {
         return roomNumber;
     }
 
-    public double getPrice() {
-        return price;
-    }
-
-    public int getSize() {
-        return size;
-    }
-
     public void setRoomNumber(int roomNumber) {
         this.roomNumber = roomNumber;
     }
 
+    public double getPrice() {
+        return price;
+    }
+
     public void setPrice(double price) {
         this.price = price;
+    }
+
+    public int getSize() {
+        return size;
     }
 
     public void setSize(int size) {
