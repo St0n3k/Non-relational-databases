@@ -10,7 +10,6 @@ import pl.lodz.nbd.mapper.RoomMapper;
 import pl.lodz.nbd.mapper.RoomMapperBuilder;
 import pl.lodz.nbd.model.Room;
 
-import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,21 +18,11 @@ import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.dropTable;
 
 public class RoomRepository {
 
-    private static CqlSession session;
 
     private final RoomDao roomDao;
 
-
-    public RoomRepository() {
-        session = CqlSession.builder()
-                .addContactPoint(new InetSocketAddress("localhost", 9042))
-                .addContactPoint(new InetSocketAddress("localhost", 9043))
-                .withLocalDatacenter("dc1")
-                .withKeyspace(GuesthouseFinals.GUESTHOUSE_NAMESPACE)
-                .withAuthCredentials("cassandra", "cassandra")
-                .build();
-
-        session.execute(dropTable(GuesthouseFinals.ROOMS).build());
+    public RoomRepository(CqlSession session) {
+        session.execute(dropTable(GuesthouseFinals.ROOMS).ifExists().build());
         session.execute(createRoomTableStatement());
 
         RoomMapper roomMapper = new RoomMapperBuilder(session).build();
@@ -63,11 +52,7 @@ public class RoomRepository {
     }
 
     public Optional<Room> getByRoomNumber(int roomNumber) {
-        try {
-            return Optional.ofNullable(roomDao.findByRoomNumber(roomNumber));
-        } catch (IllegalArgumentException e) {
-            return Optional.empty();
-        }
+        return Optional.ofNullable(roomDao.findByRoomNumber(roomNumber));
     }
 
     public void update(Room room) {

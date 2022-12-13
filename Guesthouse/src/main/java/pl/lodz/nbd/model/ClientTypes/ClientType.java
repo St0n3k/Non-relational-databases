@@ -1,13 +1,11 @@
 package pl.lodz.nbd.model.ClientTypes;
 
-import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-
-@Data
+@EqualsAndHashCode
 public abstract class ClientType {
 
-    @PartitionKey
+
     private double discount;
 
 
@@ -20,4 +18,15 @@ public abstract class ClientType {
         return price * (1.0 - discount);
     }
 
+    public double getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(double discount) {
+        this.discount = discount;
+    }
+
+    public String getDiscriminator() {
+        return "CLIENT_TYPE";
+    }
 }

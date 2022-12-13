@@ -30,7 +30,7 @@ public class RoomQueryProvider {
         Row row = session.execute(selectRoom.build()).one();
 
         if (row == null) {
-            throw new IllegalArgumentException();
+            return null;
         }
 
         return getRoom(row);

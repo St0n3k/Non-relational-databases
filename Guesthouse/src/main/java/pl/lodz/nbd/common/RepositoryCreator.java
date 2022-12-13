@@ -1,16 +1,27 @@
 package pl.lodz.nbd.common;
 
 
+import com.datastax.oss.driver.api.core.CqlSession;
 import pl.lodz.nbd.repository.ClientRepository;
 import pl.lodz.nbd.repository.ClientTypeRepository;
 import pl.lodz.nbd.repository.RentRepository;
 import pl.lodz.nbd.repository.RoomRepository;
 
+import java.net.InetSocketAddress;
+
 public class RepositoryCreator {
 
-    private static final ClientRepository clientRepository = new ClientRepository();
-    private static final ClientTypeRepository clientTypeRepository = new ClientTypeRepository();
-    private static final RoomRepository roomRepository = new RoomRepository();
+    private static final CqlSession session = CqlSession.builder()
+            .addContactPoint(new InetSocketAddress("localhost", 9042))
+            .addContactPoint(new InetSocketAddress("localhost", 9043))
+            .addContactPoint(new InetSocketAddress("localhost", 9044))
+            .withLocalDatacenter("dc1")
+            .withKeyspace(GuesthouseFinals.GUESTHOUSE_NAMESPACE)
+            .withAuthCredentials("cassandra", "cassandra")
+            .build();
+    private static final ClientRepository clientRepository = new ClientRepository(session);
+    private static final RoomRepository roomRepository = new RoomRepository(session);
+    private static final ClientTypeRepository clientTypeRepository = new ClientTypeRepository(session);
     private static final RentRepository rentRepository = new RentRepository();
 
     public static ClientRepository getClientRepository() {

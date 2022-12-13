@@ -6,6 +6,8 @@ import com.datastax.oss.driver.api.querybuilder.schema.CreateKeyspace;
 import pl.lodz.nbd.common.GuesthouseFinals;
 
 import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.createKeyspace;
 
@@ -14,6 +16,7 @@ public class Init {
         try (CqlSession session = CqlSession.builder()
                 .addContactPoint(new InetSocketAddress("localhost", 9042))
                 .addContactPoint(new InetSocketAddress("localhost", 9043))
+                .addContactPoint(new InetSocketAddress("localhost", 9044))
                 .withLocalDatacenter("dc1")
                 .withAuthCredentials("cassandra", "cassandra")
                 .build()) {
@@ -23,9 +26,11 @@ public class Init {
     }
 
     private static SimpleStatement createKeyspaceStatement() {
+        Map<String, Integer> replications = new HashMap<>();
+        replications.put("dc", 3);
         CreateKeyspace keyspace = createKeyspace(GuesthouseFinals.GUESTHOUSE_NAMESPACE)
                 .ifNotExists()
-                .withSimpleStrategy(2)
+                .withNetworkTopologyStrategy(replications)
                 .withDurableWrites(true);
         return keyspace.build();
     }
