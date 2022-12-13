@@ -36,8 +36,7 @@ public class ClientTypeRepository {
     }
 
     public boolean add(ClientType clientType) {
-        clientTypeDao.create(clientType);
-        return true;
+        return clientTypeDao.create(clientType);
     }
 
     public void remove(ClientType clientType) {

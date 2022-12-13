@@ -1,4 +1,4 @@
-package pl.lodz.nbd.providers;
+package pl.lodz.nbd.provider;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.Row;

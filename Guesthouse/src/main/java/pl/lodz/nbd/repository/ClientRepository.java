@@ -40,15 +40,9 @@ public class ClientRepository {
                 .build();
     }
 
-
     public boolean add(Client client) {
-        if (getClientByPersonalId(client.getPersonalId()).isPresent()) {
-            return false;
-        }
-        clientDao.create(client.toClientEntity());
-        return true;
+        return clientDao.create(client.toClientEntity());
     }
-
 
     public List<Client> getAll() {
         return clientDao.findAll()

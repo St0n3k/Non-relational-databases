@@ -1,4 +1,4 @@
 package pl.lodz.nbd.table;
 
-public class RentsByRoom {
+public class RentByClient {
 }

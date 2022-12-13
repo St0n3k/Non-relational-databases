@@ -4,7 +4,7 @@ import com.datastax.oss.driver.api.mapper.annotations.Dao;
 import com.datastax.oss.driver.api.mapper.annotations.QueryProvider;
 import com.datastax.oss.driver.api.mapper.annotations.StatementAttributes;
 import pl.lodz.nbd.model.ClientTypes.ClientType;
-import pl.lodz.nbd.providers.ClientTypeQueryProvider;
+import pl.lodz.nbd.provider.ClientTypeQueryProvider;
 
 import java.util.List;
 
@@ -13,7 +13,7 @@ public interface ClientTypeDao {
 
     @StatementAttributes(consistencyLevel = "QUORUM")
     @QueryProvider(providerClass = ClientTypeQueryProvider.class)
-    void create(ClientType clientType);
+    boolean create(ClientType clientType);
 
     @StatementAttributes(consistencyLevel = "QUORUM")
     @QueryProvider(providerClass = ClientTypeQueryProvider.class)

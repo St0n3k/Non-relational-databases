@@ -39,11 +39,7 @@ public class RoomRepository {
     }
 
     public boolean addRoom(Room room) {
-        if (getByRoomNumber(room.getRoomNumber()).isPresent()) {
-            return false;
-        }
-        roomDao.create(room);
-        return true;
+        return roomDao.create(room);
     }
 
 

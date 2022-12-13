@@ -1,7 +1,7 @@
 package pl.lodz.nbd.dao;
 
 import com.datastax.oss.driver.api.mapper.annotations.*;
-import pl.lodz.nbd.providers.ClientQueryProvider;
+import pl.lodz.nbd.provider.ClientQueryProvider;
 import pl.lodz.nbd.table.ClientEntity;
 
 import java.util.List;
@@ -10,8 +10,8 @@ import java.util.List;
 public interface ClientDao {
 
     @StatementAttributes(consistencyLevel = "QUORUM")
-    @Insert
-    void create(ClientEntity client);
+    @Insert(ifNotExists = true)
+    boolean create(ClientEntity client);
 
     @StatementAttributes(consistencyLevel = "QUORUM")
     @Delete

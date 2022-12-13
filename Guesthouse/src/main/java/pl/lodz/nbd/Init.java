@@ -16,7 +16,6 @@ public class Init {
         try (CqlSession session = CqlSession.builder()
                 .addContactPoint(new InetSocketAddress("localhost", 9042))
                 .addContactPoint(new InetSocketAddress("localhost", 9043))
-                .addContactPoint(new InetSocketAddress("localhost", 9044))
                 .withLocalDatacenter("dc1")
                 .withAuthCredentials("cassandra", "cassandra")
                 .build()) {
@@ -26,11 +25,9 @@ public class Init {
     }
 
     private static SimpleStatement createKeyspaceStatement() {
-        Map<String, Integer> replications = new HashMap<>();
-        replications.put("dc", 3);
         CreateKeyspace keyspace = createKeyspace(GuesthouseFinals.GUESTHOUSE_NAMESPACE)
                 .ifNotExists()
-                .withNetworkTopologyStrategy(replications)
+                .withSimpleStrategy(2)
                 .withDurableWrites(true);
         return keyspace.build();
     }

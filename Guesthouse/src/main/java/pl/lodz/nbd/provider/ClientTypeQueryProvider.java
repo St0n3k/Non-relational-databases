@@ -1,4 +1,4 @@
-package pl.lodz.nbd.providers;
+package pl.lodz.nbd.provider;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.Row;
@@ -24,13 +24,14 @@ public class ClientTypeQueryProvider {
         this.session = ctx.getSession();
     }
 
-    public void create(ClientType clientType) {
+    public boolean create(ClientType clientType) {
         SimpleStatement createStatement = QueryBuilder
                 .insertInto(GuesthouseFinals.CLIENT_TYPES)
                 .value(GuesthouseFinals.CLIENT_TYPE_DISCOUNT, literal(clientType.getDiscount()))
                 .value(GuesthouseFinals.CLIENT_TYPE_DISCRIMINATOR, literal(clientType.getDiscriminator()))
+                .ifNotExists()
                 .build();
-        session.execute(createStatement);
+        return session.execute(createStatement).wasApplied();
     }
 
     public void remove(ClientType clientType) {

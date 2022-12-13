@@ -3,6 +3,7 @@ package pl.lodz.nbd.model;
 
 import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
 import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -13,15 +14,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class Rent {
 
-    @ClusteringColumn
     private LocalDateTime beginTime;
-
-    @ClusteringColumn
     private LocalDateTime endTime;
     private boolean board;
     private double finalCost;
-
-    @PartitionKey
     private Client client;
     private Room room;
 

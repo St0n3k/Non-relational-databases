@@ -50,6 +50,9 @@ public class ClientTest {
         clientTypeRepository.remove(clientType);
         optionalClientType = clientTypeRepository.getByType("Bronze");
         assertTrue(optionalClientType.isEmpty());
+
+        Gold gold = new Gold();
+        assertFalse(clientTypeRepository.add(gold));
     }
 
 

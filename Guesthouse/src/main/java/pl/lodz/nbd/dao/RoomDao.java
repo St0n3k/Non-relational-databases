@@ -2,7 +2,7 @@ package pl.lodz.nbd.dao;
 
 import com.datastax.oss.driver.api.mapper.annotations.*;
 import pl.lodz.nbd.model.Room;
-import pl.lodz.nbd.providers.RoomQueryProvider;
+import pl.lodz.nbd.provider.RoomQueryProvider;
 
 import java.util.List;
 
@@ -10,8 +10,8 @@ import java.util.List;
 public interface RoomDao {
 
     @StatementAttributes(consistencyLevel = "QUORUM")
-    @Insert
-    void create(Room room);
+    @Insert(ifNotExists = true)
+    boolean create(Room room);
 
     @StatementAttributes(consistencyLevel = "QUORUM")
     @Delete
