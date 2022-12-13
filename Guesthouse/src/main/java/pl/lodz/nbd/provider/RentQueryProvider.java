@@ -16,8 +16,6 @@ import pl.lodz.nbd.model.Rent;
 import pl.lodz.nbd.model.Room;
 import pl.lodz.nbd.repository.ClientRepository;
 import pl.lodz.nbd.repository.RoomRepository;
-import pl.lodz.nbd.table.RentByClient;
-import pl.lodz.nbd.table.RentByRoom;
 
 import java.util.List;
 import java.util.Objects;
@@ -37,27 +35,24 @@ public class RentQueryProvider {
     }
 
     public boolean create(Rent rent) {
-        RentByClient rentByClient = rent.toRentByClient();
-        RentByRoom rentByRoom = rent.toRentByRoom();
-
         SimpleStatement insertRentByClient = QueryBuilder
                 .insertInto(GuesthouseFinals.RENTS_BY_CLIENT)
-                .value(GuesthouseFinals.CLIENT_PERSONAL_ID, literal(rentByClient.getClientPersonalId()))
-                .value(GuesthouseFinals.RENT_BEGIN_DATE, literal(rentByClient.getBeginTime()))
-                .value(GuesthouseFinals.RENT_END_DATE, literal(rentByClient.getEndTime()))
-                .value(GuesthouseFinals.RENT_BOARD, literal(rentByClient.isBoard()))
-                .value(GuesthouseFinals.RENT_COST, literal(rentByClient.getFinalCost()))
-                .value(GuesthouseFinals.ROOM_NUMBER, literal(rentByClient.getRoomNumber()))
+                .value(GuesthouseFinals.CLIENT_PERSONAL_ID, literal(rent.getClient().getPersonalId()))
+                .value(GuesthouseFinals.RENT_BEGIN_DATE, literal(rent.getBeginTime()))
+                .value(GuesthouseFinals.RENT_END_DATE, literal(rent.getEndTime()))
+                .value(GuesthouseFinals.RENT_BOARD, literal(rent.isBoard()))
+                .value(GuesthouseFinals.RENT_COST, literal(rent.getFinalCost()))
+                .value(GuesthouseFinals.ROOM_NUMBER, literal(rent.getRoom().getRoomNumber()))
                 .build();
 
         SimpleStatement insertRentByRoom = QueryBuilder
                 .insertInto(GuesthouseFinals.RENTS_BY_ROOM)
-                .value(GuesthouseFinals.CLIENT_PERSONAL_ID, literal(rentByRoom.getClientPersonalId()))
-                .value(GuesthouseFinals.RENT_BEGIN_DATE, literal(rentByRoom.getBeginTime()))
-                .value(GuesthouseFinals.RENT_END_DATE, literal(rentByRoom.getEndTime()))
-                .value(GuesthouseFinals.RENT_BOARD, literal(rentByRoom.isBoard()))
-                .value(GuesthouseFinals.RENT_COST, literal(rentByRoom.getFinalCost()))
-                .value(GuesthouseFinals.ROOM_NUMBER, literal(rentByClient.getRoomNumber()))
+                .value(GuesthouseFinals.CLIENT_PERSONAL_ID, literal(rent.getClient().getPersonalId()))
+                .value(GuesthouseFinals.RENT_BEGIN_DATE, literal(rent.getBeginTime()))
+                .value(GuesthouseFinals.RENT_END_DATE, literal(rent.getEndTime()))
+                .value(GuesthouseFinals.RENT_BOARD, literal(rent.isBoard()))
+                .value(GuesthouseFinals.RENT_COST, literal(rent.getFinalCost()))
+                .value(GuesthouseFinals.ROOM_NUMBER, literal(rent.getRoom().getRoomNumber()))
                 .build();
 
         BatchStatement batchStatement = BatchStatement.builder(BatchType.LOGGED)

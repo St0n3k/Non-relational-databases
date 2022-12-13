@@ -4,8 +4,6 @@ package pl.lodz.nbd.model;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import pl.lodz.nbd.table.RentByClient;
-import pl.lodz.nbd.table.RentByRoom;
 
 import java.time.LocalDate;
 
@@ -32,11 +30,4 @@ public class Rent {
         this.room = room;
     }
 
-    public RentByRoom toRentByRoom() {
-        return new RentByRoom(room.getRoomNumber(), endTime, beginTime, board, finalCost, client.getPersonalId());
-    }
-
-    public RentByClient toRentByClient() {
-        return new RentByClient(room.getRoomNumber(), endTime, beginTime, board, finalCost, client.getPersonalId());
-    }
 }
