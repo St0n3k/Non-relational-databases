@@ -6,10 +6,6 @@ import pl.lodz.nbd.manager.ClientManager;
 import pl.lodz.nbd.manager.RentManager;
 import pl.lodz.nbd.manager.RoomManager;
 import pl.lodz.nbd.model.Client;
-import pl.lodz.nbd.model.ClientTypes.Bronze;
-import pl.lodz.nbd.model.ClientTypes.Default;
-import pl.lodz.nbd.model.ClientTypes.Gold;
-import pl.lodz.nbd.model.ClientTypes.Silver;
 import pl.lodz.nbd.model.Rent;
 import pl.lodz.nbd.model.Room;
 import pl.lodz.nbd.repository.impl.ClientRepository;
@@ -18,15 +14,9 @@ import pl.lodz.nbd.repository.impl.RentRepository;
 import pl.lodz.nbd.repository.impl.RoomRepository;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class RentTest {
 

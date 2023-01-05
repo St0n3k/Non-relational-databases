@@ -12,10 +12,7 @@ import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.json.Path;
 
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 //TODO fix or delete
 public class ClientCacheRepository extends ClientRepository {

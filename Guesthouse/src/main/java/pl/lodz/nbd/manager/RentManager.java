@@ -1,6 +1,7 @@
 package pl.lodz.nbd.manager;
 
 import lombok.AllArgsConstructor;
+import pl.lodz.nbd.RentProducer;
 import pl.lodz.nbd.model.Client;
 import pl.lodz.nbd.model.ClientTypes.ClientType;
 import pl.lodz.nbd.model.Rent;
@@ -8,7 +9,6 @@ import pl.lodz.nbd.model.Room;
 import pl.lodz.nbd.repository.impl.ClientRepository;
 import pl.lodz.nbd.repository.impl.RentRepository;
 import pl.lodz.nbd.repository.impl.RoomRepository;
-import pl.lodz.nbd.repository.kafka.RentProducer;
 
 import java.time.Duration;
 import java.time.LocalDateTime;

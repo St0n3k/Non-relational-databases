@@ -5,7 +5,6 @@ import com.google.gson.GsonBuilder;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import pl.lodz.nbd.common.ClientTypeInstanceCreator;
-import pl.lodz.nbd.model.Client;
 import pl.lodz.nbd.model.ClientTypes.ClientType;
 import pl.lodz.nbd.model.Rent;
 import pl.lodz.nbd.repository.impl.RentRepository;

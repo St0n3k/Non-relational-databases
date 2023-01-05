@@ -9,18 +9,16 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.KafkaFuture;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.apache.kafka.common.serialization.UUIDDeserializer;
 import pl.lodz.nbd.common.ClientTypeInstanceCreator;
-import pl.lodz.nbd.manager.RentManager;
 import pl.lodz.nbd.model.ClientTypes.ClientType;
 import pl.lodz.nbd.model.Rent;
-import pl.lodz.nbd.repository.impl.ClientRepository;
-import pl.lodz.nbd.repository.impl.ClientTypeRepository;
 import pl.lodz.nbd.repository.impl.RentRepository;
-import pl.lodz.nbd.repository.impl.RoomRepository;
 
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -64,7 +62,7 @@ public class RentConsumer {
         }
 
         Properties consumerConfig = new Properties();
-        consumerConfig.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, UUIDDeserializer.class.getName());
+        consumerConfig.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         consumerConfig.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         consumerConfig.put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroupName);//dynamiczny przydział
         consumerConfig.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "kafka1:9192,kafka2:9292,kafka3:9392");
@@ -82,15 +80,15 @@ public class RentConsumer {
             }
 
             while (true) {
-                ConsumerRecords<UUID, String> records = consumer.poll(Duration.ofMillis(100));
-                for (ConsumerRecord<UUID, String> record : records) {
-                    UUID key = record.key();
+                ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
+                for (ConsumerRecord<String, String> record : records) {
+                    String key = record.key();
                     String value = record.value();
                     Gson mapper = new GsonBuilder()
                             .registerTypeAdapter(ClientType.class, new ClientTypeInstanceCreator())
                             .create();
                     Rent rent = mapper.fromJson(value, Rent.class);
-                    System.out.println(rent);
+                    System.out.println(key + " " + rent);
                     rentRepository.add(rent);
                     consumer.commitSync();
                 }
