@@ -1,0 +1,57 @@
+version: "3.8"
+
+services:
+  mongo1:
+    build: .
+    image: mongocustom
+    container_name: mongodb1
+    hostname: mongodb1
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=nbd
+      - MONGO_INITDB_ROOT_PASSWORD=nbdpassword
+    command: --config /etc/mongod.conf
+    networks:
+      - mongonet
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 10s
+      timeout: 2s
+      retries: 5
+  mongoinit:
+    build: .
+    image: mongocustom
+    container_name: mongodbinit
+    hostname: mongodbinit
+    depends_on:
+      mongo1:
+        condition: service_healthy
+    networks:
+      - mongonet
+    command: >
+      mongosh
+      --host mongodb1
+      --username nbd
+      --password nbdpassword
+      --authenticationDatabase admin --eval
+      '
+      rs.initiate()
+      '
+  redis-stack:
+    image: redis/redis-stack:latest
+    volumes:
+      - redis-stack-data:/bitnami/redis/data
+    ports:
+      - "8001:8001"
+      - "6379:6379"
+    networks:
+      - redisnet
+
+volumes:
+  redis-stack-data:
+    driver: local
+
+networks:
+  mongonet: { }
+  redisnet: { }

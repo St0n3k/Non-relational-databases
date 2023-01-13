@@ -1,0 +1,92 @@
+version: "3.8"
+
+services:
+  mongo1:
+    build: .
+    image: mongocustom
+    container_name: mongodb1
+    hostname: mongodb1
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=nbd
+      - MONGO_INITDB_ROOT_PASSWORD=nbdpassword
+    command: --config /etc/mongod.conf
+    networks:
+      - mongonet
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 10s
+      timeout: 2s
+      retries: 5
+  mongo2:
+    build: .
+    image: mongocustom
+    container_name: mongodb2
+    hostname: mongodb2
+    ports:
+      - "27018:27018"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=nbd
+      - MONGO_INITDB_ROOT_PASSWORD=nbdpassword
+    command: --config /etc/mongod.conf
+    networks:
+      - mongonet
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 10s
+      timeout: 2s
+      retries: 5
+  mongo3:
+    build: .
+    image: mongocustom
+    container_name: mongodb3
+    hostname: mongodb3
+    ports:
+      - "27019:27019"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=nbd
+      - MONGO_INITDB_ROOT_PASSWORD=nbdpassword
+    command: --config /etc/mongod.conf
+    networks:
+      - mongonet
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 10s
+      timeout: 2s
+      retries: 5
+  mongoinit:
+    build: .
+    image: mongocustom
+    container_name: mongodbinit
+    hostname: mongodbinit
+    depends_on:
+      mongo1:
+        condition: service_healthy
+      mongo2:
+        condition: service_healthy
+      mongo3:
+        condition: service_healthy
+    networks:
+      - mongonet
+    command: >
+      mongosh
+      --host mongodb1
+      --username nbd
+      --password nbdpassword
+      --authenticationDatabase admin --eval
+      '
+      rs.initiate(
+        {
+           _id: "replica_set_single",
+           version: 1,
+           members: [
+              { _id: 0, host : "mongodb1" },
+              { _id: 1, host : "mongodb2" },
+              { _id: 2, host : "mongodb3" }
+           ]
+        }
+      )
+      '
+networks:
+  mongonet: { }
