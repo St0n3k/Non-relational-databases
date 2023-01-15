@@ -2,6 +2,14 @@
 
 [![forthebadge](https://forthebadge.com/images/badges/made-with-java.svg)](https://forthebadge.com)
 
+### :construction_worker: Contributors
+|Name |Github|
+|-|-|
+|Rafał|[rstrzalkowski](https://github.com/rstrzalkowski)|
+|Kamil|[St0n3k](https://github.com/St0n3k)|
+
+<br/>
+
 Technologies used:
 - Java 17
 - Maven 3.8.3
